@@ -1,0 +1,100 @@
+<div class="layout-container">
+  <nav class="vertical-toolbar">
+    <div class="brand"><h3>SL</h3></div>
+    <ul class="nav-links">
+      <li (click)="voltar()">← Voltar</li>
+      <li class="active">Itens da Lista</li>
+    </ul>
+    <div class="spacer"></div>
+  </nav>
+
+  <main class="main-content">
+    <header class="page-header">
+      <div class="header-title">
+        <div class="title-row">
+          <button class="btn-back" (click)="voltar()">← Voltar</button>
+          <h2>{{ listaAtual?.nome || 'Carregando...' }}</h2>
+        </div>
+        
+        <div class="resumo-financeiro" *ngIf="listaAtual">
+          <span class="total-gasto">Total Gasto: <strong>R$ {{ totalLista | number:'1.2-2' }}</strong></span>
+          <span class="orcamento-info" *ngIf="listaAtual.orcamento > 0">
+            / Orçamento: R$ {{ listaAtual.orcamento | number:'1.2-2' }}
+          </span>
+        </div>
+      </div>
+      
+      <div class="header-actions">
+        <button class="btn-primary" (click)="abrirModal()">+ Produto Manual</button>
+        
+        <!-- Botões integrados de Câmera e Nuvem -->
+        <button class="btn-primary btn-camera" (click)="abrirCamera()" [disabled]="isProcessandoImagem">
+            {{ isProcessandoImagem ? '⏳ Lendo...' : '📷 Ler Etiqueta' }}
+        </button>
+        
+        <button class="btn-secondary btn-sincronizar" (click)="sincronizarNuvem()" [disabled]="isSincronizando">
+            {{ isSincronizando ? '⏳ Sincronizando...' : '☁️ Nuvem' }}
+        </button>
+      </div>
+    </header>
+
+    <div class="content-area">
+      <p class="empty-state" *ngIf="itens.length === 0">
+        Sua lista está vazia. Adicione um produto manualmente ou use a câmera!
+      </p>
+
+      <div class="itens-list" *ngIf="itens.length > 0">
+        <div class="item-card" *ngFor="let item of itens">
+          <div class="item-info">
+            <h4>{{ item.nome }}</h4>
+            <span class="item-price">R$ {{ item.preco_unitario | number:'1.2-2' }} x {{ item.quantidade }}</span>
+          </div>
+          
+          <!-- Agrupamos o subtotal e os botões de ação -->
+          <div class="item-actions-row">
+            <div class="item-subtotal">
+              R$ {{ (item.quantidade * item.preco_unitario) | number:'1.2-2' }}
+            </div>
+            
+            <div style="display: flex; gap: 0.5rem;">
+              <!-- Botão de Editar -->
+              <button class="btn-secondary" style="padding: 0.5rem; border: none; font-size: 1.1rem; background: transparent;" (click)="abrirModal(item)" title="Editar Item">✏️</button>
+              
+              <!-- Botão de Excluir -->
+              <button class="btn-delete" (click)="excluirItem(item.id!)" title="Excluir Item">🗑️</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal de Novo Produto / Editar Produto -->
+<div class="modal-overlay" *ngIf="isModalOpen">
+  <div class="modal-content">
+    <h3>{{ itemEmEdicaoId ? 'Editar Produto' : 'Adicionar Produto' }}</h3>
+    
+    <div class="form-group">
+      <label>Nome do Produto</label>
+      <input type="text" [(ngModel)]="novoItemNome" placeholder="Ex: Arroz 5kg" required>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group half">
+        <label>Quantidade</label>
+        <input type="number" [(ngModel)]="novoItemQtd" min="1">
+      </div>
+      
+      <div class="form-group half">
+        <label>Preço Unitário (R$)</label>
+        <input type="number" [(ngModel)]="novoItemPreco" placeholder="0.00" step="0.01">
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" (click)="fecharModal()">Cancelar</button>
+      <button class="btn-primary" (click)="salvarItem()" [disabled]="!novoItemNome || novoItemQtd < 1">Salvar</button>
+    </div>
+  </div>
+</div>

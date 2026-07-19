@@ -1,0 +1,271 @@
+/* Herança do Layout Principal */
+.layout-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--secondary-color);
+}
+
+/* Reutilização da Toolbar Vertical */
+.vertical-toolbar {
+  width: 80px;
+  background-color: var(--bg-card);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 0;
+}
+
+.brand h3 {
+  color: var(--primary-color);
+  margin-bottom: 2rem;
+  font-size: 1.5rem;
+}
+
+.nav-links {
+  list-style: none;
+  width: 100%;
+}
+
+.nav-links li {
+  padding: 1rem;
+  text-align: center;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition);
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+
+.nav-links li.active, .nav-links li:hover {
+  color: var(--primary-color);
+  border-left: 3px solid var(--primary-color);
+  background-color: rgba(37, 99, 235, 0.05);
+}
+
+/* Conteúdo Principal */
+.main-content {
+  flex: 1;
+  padding: 2rem 3rem;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Cabeçalho da Lista */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  background-color: var(--bg-card);
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.btn-back {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  padding: 0;
+  font-size: 0.9rem;
+}
+
+.btn-back:hover {
+  color: var(--primary-color);
+  transform: translateX(-2px);
+}
+
+.header-title h2 {
+  color: var(--text-main);
+  font-size: 1.5rem;
+}
+
+.resumo-financeiro {
+  font-size: 1rem;
+  color: var(--text-muted);
+}
+
+.total-gasto strong {
+  color: var(--primary-color);
+  font-size: 1.2rem;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* Lista de Produtos */
+.itens-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.item-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--bg-card);
+  padding: 1.25rem 1.5rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  transition: var(--transition);
+}
+
+.item-card:hover {
+  box-shadow: var(--shadow-sm);
+  border-color: #cbd5e1;
+}
+
+.item-info h4 {
+  color: var(--text-main);
+  font-size: 1.1rem;
+  margin-bottom: 0.25rem;
+}
+
+.item-price {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.item-subtotal {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-main);
+  background-color: var(--secondary-color);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-muted);
+  background-color: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px dashed var(--border-color);
+}
+
+/* =========================================
+   RESPONSIVIDADE (Visual de App / Mobile)
+   ========================================= */
+@media (max-width: 768px) {
+  .layout-container {
+    flex-direction: column;
+    padding-bottom: 70px;
+  }
+
+  /* Bottom Navigation */
+  .vertical-toolbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 70px;
+    flex-direction: row;
+    justify-content: center;
+    padding: 0;
+    border-right: none;
+    border-top: 1px solid var(--border-color);
+    z-index: 1000;
+  }
+
+  .brand { display: none; }
+
+  .nav-links {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    height: 100%;
+  }
+
+  .nav-links li {
+    padding: 0.5rem 1rem;
+    border-left: none;
+    border-bottom: 3px solid transparent;
+  }
+
+  .nav-links li.active {
+    border-left: none;
+    border-bottom: 3px solid var(--primary-color);
+  }
+
+  /* Ajustes do Cabeçalho e Conteúdo */
+  .main-content {
+    padding: 1rem;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.5rem;
+    padding: 1rem;
+  }
+
+  .title-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header-actions {
+    flex-direction: column; /* Empilha os botões no celular */
+    width: 100%;
+  }
+
+  .header-actions button {
+    width: 100%; 
+  }
+
+  /* Cards de Produto */
+  .item-card {
+    padding: 1rem;
+    flex-direction: column; /* Coloca o subtotal embaixo do nome do produto */
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .item-subtotal {
+    width: 100%;
+    text-align: right; /* Alinha o valor à direita para facilitar leitura */
+  }
+}
+
+.item-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.btn-delete {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  padding: 0.5rem;
+  border-radius: var(--radius-md);
+  color: #ef4444; /* Vermelho alerta */
+  background-color: #fef2f2;
+}
+
+.btn-delete:hover {
+  background-color: #fee2e2;
+  transform: scale(1.05);
+}
+
+/* Garante que no celular o botão não fique esmagado */
+@media (max-width: 768px) {
+  .item-actions-row {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
