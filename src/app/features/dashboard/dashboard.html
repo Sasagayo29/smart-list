@@ -1,0 +1,79 @@
+<div class="layout-container">
+  <!-- Menu Lateral minimalista -->
+  <nav class="vertical-toolbar">
+    <div class="brand"><h3>SL</h3></div>
+    <ul class="nav-links">
+      <li class="active">Minhas Listas</li>
+    </ul>
+    <div class="spacer"></div>
+  </nav>
+
+  <main class="main-content">
+    <header class="page-header">
+      <div class="header-title">
+        <h2>Minhas Listas</h2>
+        <p class="subtitle">Gerencie suas compras e orçamentos</p>
+      </div>
+      
+      <div class="header-actions">
+        <button class="btn-primary" (click)="abrirModalNovaLista()">+ Nova Lista</button>
+      </div>
+    </header>
+
+    <div class="content-area">
+      <!-- Estado vazio -->
+      <div class="empty-state" *ngIf="listas.length === 0">
+        <p>Você ainda não tem nenhuma lista. Crie a primeira para começar!</p>
+      </div>
+
+      <!-- Grade de Listas -->
+      <div class="listas-grid" *ngIf="listas.length > 0">
+        <div class="lista-card" *ngFor="let lista of listas" (click)="irParaLista(lista.id!)">
+          
+          <div class="card-header">
+            <h3>{{ lista.nome }}</h3>
+            <span class="card-date">{{ lista.created_at | date:'dd/MM/yyyy' }}</span>
+          </div>
+
+          <div class="card-body">
+            <div class="budget-row">
+              <span class="budget-label">Orçamento Total</span>
+              <span class="budget-value">R$ {{ lista.orcamento | number:'1.2-2' }}</span>
+            </div>
+            
+            <!-- Barra de Progresso visual -->
+            <div class="progress-container">
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="lista.progresso"></div>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal de Nova Lista (Estilo Padronizado e Estável) -->
+<div class="modal-overlay" *ngIf="isModalOpen">
+  <div class="modal-content">
+    <h3>Criar Nova Lista</h3>
+    
+    <div class="form-group">
+      <label>Nome da Lista</label>
+      <input type="text" [(ngModel)]="novaListaNome" placeholder="Ex: Compras do Mês" required>
+    </div>
+
+    <div class="form-group">
+      <label>Orçamento (R$)</label>
+      <!-- Input de número com layout fixo -->
+      <input type="number" [(ngModel)]="novaListaOrcamento" placeholder="0.00" step="0.01">
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" (click)="fecharModal()">Cancelar</button>
+      <button class="btn-primary" (click)="salvarLista()" [disabled]="!novaListaNome">Salvar</button>
+    </div>
+  </div>
+</div>
