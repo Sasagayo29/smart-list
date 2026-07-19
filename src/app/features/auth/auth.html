@@ -1,0 +1,27 @@
+<div class="auth-container">
+  <h2>Smart List</h2>
+  <p>Acesse ou crie sua conta para gerenciar suas compras.</p>
+
+  <form (submit)="$event.preventDefault()">
+    <div class="form-group">
+      <label for="email">E-mail</label>
+      <input type="email" id="email" name="email" [(ngModel)]="email" placeholder="seu@email.com" required>
+    </div>
+
+    <div class="form-group">
+      <label for="password">Senha</label>
+      <input type="password" id="password" name="password" [(ngModel)]="password" placeholder="Sua senha" required>
+    </div>
+
+    <p class="error-msg" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+    <div class="actions">
+      <button type="button" (click)="handleLogin()" [disabled]="isLoading">
+        {{ isLoading ? 'Carregando...' : 'Entrar' }}
+      </button>
+      <button type="button" class="btn-outline" (click)="handleRegister()" [disabled]="isLoading">
+        Criar Conta
+      </button>
+    </div>
+  </form>
+</div>
