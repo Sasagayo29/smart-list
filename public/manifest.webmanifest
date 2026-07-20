@@ -1,9 +1,11 @@
 {
-  "name": "smart-list",
-  "short_name": "smart-list",
+  "name": "Smart List",
+  "short_name": "Smart List",
+  "theme_color": "#2563eb",
+  "background_color": "#f1f5f9",
   "display": "standalone",
-  "scope": "./",
-  "start_url": "./",
+  "scope": "/",
+  "start_url": "/",
   "icons": [
     {
       "src": "icons/icon-72x72.png",

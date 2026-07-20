@@ -39,6 +39,19 @@
     </header>
 
     <div class="content-area">
+      
+      <!-- 👇 BLOCO DE ORDENAÇÃO CORRIGIDO E NO LUGAR CERTO 👇 -->
+      <div class="filtros-container" *ngIf="itens.length > 0">
+        <label for="ordenacao">Ordenar por:</label>
+        <select id="ordenacao" [(ngModel)]="criterioOrdenacao" (change)="ordenarLista()">
+          <option value="recentes">Mais Recentes</option>
+          <option value="nome">Ordem Alfabética (A-Z)</option>
+          <option value="maior-preco">Maior Valor Total</option>
+          <option value="menor-preco">Menor Valor Total</option>
+        </select>
+      </div>
+      <!-- 👆 FIM DO BLOCO DE ORDENAÇÃO 👆 -->
+
       <p class="empty-state" *ngIf="itens.length === 0">
         Sua lista está vazia. Adicione um produto manualmente ou use a câmera!
       </p>
@@ -50,17 +63,13 @@
             <span class="item-price">R$ {{ item.preco_unitario | number:'1.2-2' }} x {{ item.quantidade }}</span>
           </div>
           
-          <!-- Agrupamos o subtotal e os botões de ação -->
           <div class="item-actions-row">
             <div class="item-subtotal">
               R$ {{ (item.quantidade * item.preco_unitario) | number:'1.2-2' }}
             </div>
             
             <div style="display: flex; gap: 0.5rem;">
-              <!-- Botão de Editar -->
               <button class="btn-secondary" style="padding: 0.5rem; border: none; font-size: 1.1rem; background: transparent;" (click)="abrirModal(item)" title="Editar Item">✏️</button>
-              
-              <!-- Botão de Excluir -->
               <button class="btn-delete" (click)="excluirItem(item.id!)" title="Excluir Item">🗑️</button>
             </div>
           </div>

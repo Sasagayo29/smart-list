@@ -30,7 +30,9 @@ export class ListaItensComponent implements OnInit {
   listaId: string = '';
   listaAtual: ListaCompra | undefined;
   itens: ItemCompra[] = [];
-  totalLista: number = 0; 
+  totalLista: number = 0;
+  // Variável de Ordenação
+  criterioOrdenacao = 'recentes';
 
   // Variáveis do Modal
   isModalOpen = false;
@@ -61,6 +63,28 @@ export class ListaItensComponent implements OnInit {
     this.totalLista = this.itens.reduce((acc, item) => {
       return acc + (item.quantidade * (item.preco_unitario || 0));
     }, 0);
+  }
+
+  ordenarLista() {
+    switch (this.criterioOrdenacao) {
+      case 'nome':
+        this.itens.sort((a, b) => a.nome.localeCompare(b.nome));
+        break;
+      case 'maior-preco':
+        this.itens.sort((a, b) => 
+          (b.preco_unitario * b.quantidade) - (a.preco_unitario * a.quantidade)
+        );
+        break;
+      case 'menor-preco':
+        this.itens.sort((a, b) => 
+          (a.preco_unitario * a.quantidade) - (b.preco_unitario * b.quantidade)
+        );
+        break;
+      default:
+        // Ordem original (como foi inserido no banco)
+        this.carregarDados(); 
+        break;
+    }
   }
 
   // 👇 Função abrirModal atualizada para receber um item opcional
