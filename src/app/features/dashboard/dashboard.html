@@ -1,9 +1,11 @@
 <div class="layout-container">
-  <!-- Menu Lateral minimalista -->
+  <!-- Toolbar Lateral (Vira Bottom Nav no celular) -->
   <nav class="vertical-toolbar">
     <div class="brand"><h3>SL</h3></div>
     <ul class="nav-links">
       <li class="active">Minhas Listas</li>
+      <li>Configurações</li>
+      <li>Sair</li>
     </ul>
     <div class="spacer"></div>
   </nav>
@@ -11,51 +13,56 @@
   <main class="main-content">
     <header class="page-header">
       <div class="header-title">
-        <h2>Minhas Listas</h2>
+        <h2>Dashboard</h2>
         <p class="subtitle">Gerencie suas compras e orçamentos</p>
       </div>
-      
       <div class="header-actions">
         <button class="btn-primary" (click)="abrirModalNovaLista()">+ Nova Lista</button>
       </div>
     </header>
 
     <div class="content-area">
-      <!-- Estado vazio -->
-      <div class="empty-state" *ngIf="listas.length === 0">
-        <p>Você ainda não tem nenhuma lista. Crie a primeira para começar!</p>
-      </div>
+      <p class="empty-state" *ngIf="listas.length === 0">
+        Nenhuma lista encontrada. Crie sua primeira lista de compras!
+      </p>
 
-      <!-- Grade de Listas -->
       <div class="listas-grid" *ngIf="listas.length > 0">
+        <!-- Cartões Premium -->
         <div class="lista-card" *ngFor="let lista of listas" (click)="irParaLista(lista.id!)">
           
           <div class="card-header">
             <h3>{{ lista.nome }}</h3>
-            <span class="card-date">{{ lista.created_at | date:'dd/MM/yyyy' }}</span>
+            <span class="date-badge">{{ lista.created_at | date:'dd/MM' }}</span>
           </div>
-
+          
           <div class="card-body">
-            <div class="budget-row">
-              <span class="budget-label">Orçamento Total</span>
-              <span class="budget-value">R$ {{ lista.orcamento | number:'1.2-2' }}</span>
+            <div class="valor-destaque">
+              <span class="label">Total Gasto</span>
+              <span class="valor">R$ {{ lista.gastoTotal | number:'1.2-2' }}</span>
             </div>
-            
-            <!-- Barra de Progresso visual -->
-            <div class="progress-container">
-              <div class="progress-bar">
-                <div class="progress-fill" [style.width.%]="lista.progresso"></div>
-              </div>
+            <div class="valor-orcamento" *ngIf="lista.orcamento > 0">
+              Limite: R$ {{ lista.orcamento | number:'1.2-2' }}
             </div>
           </div>
           
+          <!-- Barra de Progresso do Orçamento -->
+          <div class="card-footer" *ngIf="lista.orcamento > 0">
+            <div class="progress-info">
+              <span>Progresso</span>
+              <span>{{ lista.progresso | number:'1.0-0' }}%</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" [style.width.%]="lista.progresso"></div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
   </main>
 </div>
 
-<!-- Modal de Nova Lista (Estilo Padronizado e Estável) -->
+<!-- Modal de Nova Lista (Padrão Premium) -->
 <div class="modal-overlay" *ngIf="isModalOpen">
   <div class="modal-content">
     <h3>Criar Nova Lista</h3>
@@ -66,14 +73,13 @@
     </div>
 
     <div class="form-group">
-      <label>Orçamento (R$)</label>
-      <!-- Input de número com layout fixo -->
-      <input type="number" [(ngModel)]="novaListaOrcamento" placeholder="0.00" step="0.01">
+      <label>Orçamento Limite (R$)</label>
+      <input type="number" [(ngModel)]="novaListaOrcamento" placeholder="Ex: 500.00">
     </div>
 
     <div class="modal-actions">
       <button class="btn-cancel" (click)="fecharModal()">Cancelar</button>
-      <button class="btn-primary" (click)="salvarLista()" [disabled]="!novaListaNome">Salvar</button>
+      <button class="btn-primary" (click)="salvarLista()" [disabled]="!novaListaNome">Criar Lista</button>
     </div>
   </div>
 </div>
