@@ -298,3 +298,143 @@
 .filtros-container select:focus {
   border-color: var(--primary-color);
 }
+
+/* =========================================
+   FAB E CALCULADORA (Premium UI)
+   ========================================= */
+.fab-calculator {
+  position: fixed;
+  bottom: 90px; /* Acima da barra de navegação no celular */
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-full);
+  background-color: var(--primary-color);
+  color: white;
+  font-size: 1.5rem;
+  border: none;
+  box-shadow: var(--shadow-lg);
+  cursor: pointer;
+  z-index: 990;
+  transition: var(--transition);
+}
+
+.fab-calculator:active {
+  transform: scale(0.9);
+}
+
+/* Fundo Escuro que aparece quando a aba sobe */
+.bottom-sheet-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(4px); /* Efeito de vidro Premium */
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.bottom-sheet-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Aba Deslizante (Bottom Sheet) */
+.bottom-sheet {
+  position: fixed;
+  bottom: -100%;
+  left: 0;
+  width: 100%;
+  background-color: var(--bg-main);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  box-shadow: var(--shadow-up);
+  z-index: 1000;
+  transition: bottom 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  padding: 1.5rem 1.5rem 3rem 1.5rem; /* Margem extra embaixo pro celular */
+}
+
+.bottom-sheet.active {
+  bottom: 0;
+}
+
+.sheet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.btn-close {
+  background: var(--border-color);
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  font-weight: bold;
+  color: var(--text-muted);
+}
+
+/* Grid da Calculadora */
+.calc-visor {
+  background-color: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: 1.5rem 1rem;
+  font-size: 2.5rem;
+  text-align: right;
+  color: var(--text-main);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+  margin-bottom: 1.5rem;
+  font-family: monospace;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+.calc-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.calc-btn {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.2rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-main);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.calc-btn:active {
+  transform: scale(0.95);
+  background-color: var(--border-color);
+}
+
+.calc-btn.operator {
+  color: var(--primary-color);
+  background-color: #e2e8f0;
+}
+
+.calc-btn.action {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+}
+
+.calc-btn.danger {
+  color: var(--danger);
+}
+
+.calc-btn.col-span {
+  grid-column: span 2;
+}
+
+.calc-btn.row-span {
+  grid-row: span 2;
+}

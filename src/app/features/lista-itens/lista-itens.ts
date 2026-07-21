@@ -40,6 +40,30 @@ export class ListaItensComponent implements OnInit {
   novoItemQtd = 1;
   novoItemPreco: number | null = null;
   itemEmEdicaoId: string | null = null; // 👇 Nova variável de controle
+  // Variáveis da Calculadora
+  isCalcOpen = false;
+  calcVisor = '';
+
+  abrirCalculadora() { this.isCalcOpen = true; }
+  fecharCalculadora() { this.isCalcOpen = false; }
+  
+  addCalc(valor: string) {
+    if (this.calcVisor === 'Erro') this.calcVisor = '';
+    this.calcVisor += valor;
+  }
+
+  limparCalc() { this.calcVisor = ''; }
+
+  calcular() {
+    try {
+      // Cria uma função segura para avaliar a expressão matemática
+      const resultado = new Function('return ' + this.calcVisor)();
+      // Limita a 2 casas decimais se for um número quebrado
+      this.calcVisor = Number.isInteger(resultado) ? resultado.toString() : resultado.toFixed(2);
+    } catch (e) {
+      this.calcVisor = 'Erro';
+    }
+  }
 
   async ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {

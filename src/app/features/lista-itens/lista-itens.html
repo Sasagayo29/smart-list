@@ -107,3 +107,44 @@
     </div>
   </div>
 </div>
+
+<!-- Botão Flutuante da Calculadora (FAB) -->
+<button class="fab-calculator" (click)="abrirCalculadora()">
+  🧮
+</button>
+
+<!-- Bottom Sheet da Calculadora -->
+<div class="bottom-sheet-overlay" [class.active]="isCalcOpen" (click)="fecharCalculadora()"></div>
+<div class="bottom-sheet" [class.active]="isCalcOpen">
+  <div class="sheet-header">
+    <h3>Calculadora</h3>
+    <button class="btn-close" (click)="fecharCalculadora()">✕</button>
+  </div>
+  
+  <div class="calc-container">
+    <div class="calc-visor">{{ calcVisor || '0' }}</div>
+    <div class="calc-grid">
+      <button class="calc-btn danger" (click)="limparCalc()">C</button>
+      <button class="calc-btn operator" (click)="addCalc('/')">÷</button>
+      <button class="calc-btn operator" (click)="addCalc('*')">×</button>
+      <button class="calc-btn operator" (click)="addCalc('-')">-</button>
+      
+      <button class="calc-btn" (click)="addCalc('7')">7</button>
+      <button class="calc-btn" (click)="addCalc('8')">8</button>
+      <button class="calc-btn" (click)="addCalc('9')">9</button>
+      <button class="calc-btn operator row-span" (click)="addCalc('+')">+</button>
+      
+      <button class="calc-btn" (click)="addCalc('4')">4</button>
+      <button class="calc-btn" (click)="addCalc('5')">5</button>
+      <button class="calc-btn" (click)="addCalc('6')">6</button>
+      
+      <button class="calc-btn" (click)="addCalc('1')">1</button>
+      <button class="calc-btn" (click)="addCalc('2')">2</button>
+      <button class="calc-btn" (click)="addCalc('3')">3</button>
+      <button class="calc-btn action row-span" (click)="calcular()">=</button>
+      
+      <button class="calc-btn col-span" (click)="addCalc('0')">0</button>
+      <button class="calc-btn" (click)="addCalc('.')">.</button>
+    </div>
+  </div>
+</div>
