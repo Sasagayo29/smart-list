@@ -1,104 +1,113 @@
-.auth-container {
+.auth-layout {
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   min-height: 100vh;
-  padding: 24px;
-  background-color: #f8f9fa;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  text-align: center;
+  background-color: var(--bg-main);
+  padding: 1.5rem;
 }
 
-.auth-container h2 {
-  margin-bottom: 8px;
-  color: #333;
-  font-size: 28px;
-}
-
-.auth-container p {
-  color: #666;
-  margin-bottom: 32px;
-  font-size: 14px;
-}
-
-form {
+.auth-card {
+  background-color: var(--bg-card);
+  padding: 3rem 2.5rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg); /* Sombra Premium */
   width: 100%;
-  max-width: 400px;
-  background: #ffffff;
-  padding: 24px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  max-width: 420px;
+  border: 1px solid var(--border-color);
+}
+
+.brand {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.brand h3 {
+  color: var(--primary-color);
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.auth-card h2 {
+  text-align: center;
+  color: var(--text-main);
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 2rem;
 }
 
 .form-group {
-  display: flex;
-  flex-direction: column;
-  text-align: left;
-  margin-bottom: 16px;
+  margin-bottom: 1.25rem;
 }
 
 .form-group label {
-  margin-bottom: 6px;
-  font-weight: 600;
-  color: #444;
-  font-size: 14px;
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--text-main);
+  font-weight: 500;
+  font-size: 0.9rem;
 }
 
 .form-group input {
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 16px;
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background-color: var(--secondary-color);
+  color: var(--text-main);
+  font-size: 1rem;
+  transition: var(--transition);
   outline: none;
-  transition: border-color 0.2s;
 }
 
 .form-group input:focus {
-  border-color: #666;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); /* Efeito suave de foco */
 }
 
+/* Caixa de erro estática e elegante */
 .error-msg {
-  color: #d9534f;
-  font-size: 14px;
-  margin-bottom: 16px;
-  font-weight: 500;
+  background-color: #fef2f2;
+  color: var(--danger);
+  padding: 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  margin-bottom: 1.25rem;
+  text-align: center;
+  border: 1px solid #fecaca;
 }
 
-.actions {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 24px;
+.auth-btn {
+  width: 100%;
+  padding: 0.85rem;
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
 }
 
-button {
-  padding: 14px;
+.auth-footer {
+  text-align: center;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+.btn-toggle {
+  background: none;
   border: none;
-  border-radius: 6px;
-  background-color: #212529;
-  color: white;
-  font-size: 16px;
-  font-weight: bold;
+  color: var(--primary-color);
+  font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.2s;
+  margin-left: 0.5rem;
+  font-size: 0.95rem;
+  padding: 0;
 }
 
-button:hover {
-  opacity: 0.9;
-}
-
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.btn-outline {
-  background-color: transparent;
-  color: #212529;
-  border: 2px solid #212529;
-}
-
-.btn-outline:hover {
-  background-color: #f1f1f1;
+.btn-toggle:hover {
+  text-decoration: underline;
 }

@@ -1,27 +1,41 @@
-<div class="auth-container">
-  <h2>Smart List</h2>
-  <p>Acesse ou crie sua conta para gerenciar suas compras.</p>
+<div class="auth-layout">
+  <div class="auth-card">
+    <div class="brand"><h3>Smart List</h3></div>
+    
+    <h2>{{ isLoginMode ? 'Bem-vindo de volta' : 'Criar nova conta' }}</h2>
+    <p class="subtitle">
+      {{ isLoginMode ? 'Acesse suas listas de compras' : 'Comece a organizar seu orçamento' }}
+    </p>
 
-  <form (submit)="$event.preventDefault()">
-    <div class="form-group">
-      <label for="email">E-mail</label>
-      <input type="email" id="email" name="email" [(ngModel)]="email" placeholder="seu@email.com" required>
-    </div>
+    <!-- Formulário Estável -->
+    <form (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label>E-mail</label>
+        <input type="email" name="email" [(ngModel)]="email" placeholder="seu@email.com" required autocomplete="email">
+      </div>
 
-    <div class="form-group">
-      <label for="password">Senha</label>
-      <input type="password" id="password" name="password" [(ngModel)]="password" placeholder="Sua senha" required>
-    </div>
+      <div class="form-group">
+        <label>Senha</label>
+        <input type="password" name="password" [(ngModel)]="password" placeholder="••••••••" required autocomplete="current-password">
+      </div>
 
-    <p class="error-msg" *ngIf="errorMessage">{{ errorMessage }}</p>
+      <!-- Bloco de erro em vez de colorir as bordas -->
+      <div class="error-msg" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
 
-    <div class="actions">
-      <button type="button" (click)="handleLogin()" [disabled]="isLoading">
-        {{ isLoading ? 'Carregando...' : 'Entrar' }}
+      <button type="submit" class="btn-primary auth-btn" [disabled]="isLoading || !email || !password">
+        {{ isLoading ? 'Aguarde...' : (isLoginMode ? 'Entrar' : 'Cadastrar') }}
       </button>
-      <button type="button" class="btn-outline" (click)="handleRegister()" [disabled]="isLoading">
-        Criar Conta
+    </form>
+
+    <div class="auth-footer">
+      <span class="toggle-text">
+        {{ isLoginMode ? 'Não tem uma conta?' : 'Já possui uma conta?' }}
+      </span>
+      <button class="btn-toggle" (click)="toggleMode()" type="button">
+        {{ isLoginMode ? 'Cadastre-se' : 'Faça Login' }}
       </button>
     </div>
-  </form>
+  </div>
 </div>

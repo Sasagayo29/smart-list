@@ -7,7 +7,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class SupabaseService {
-  private supabase: SupabaseClient;
+  public supabase: SupabaseClient;
   private _session: BehaviorSubject<Session | null> = new BehaviorSubject<Session | null>(null);
 
   constructor() {
