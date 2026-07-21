@@ -1,9 +1,11 @@
 import { Component, inject, OnInit, PLATFORM_ID } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common'; // 👈 Adicionamos isPlatformBrowser
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LocalDbService } from '../../core/services/db/local-db';
 import { ListaCompra } from '../../core/models/compra.modal';
+// 👇 Importe o serviço do Supabase
+import { SupabaseService } from '../../core/services/supabase/supabase'; 
 
 interface ListaViewModel extends ListaCompra {
   gastoTotal: number;
@@ -20,13 +22,27 @@ interface ListaViewModel extends ListaCompra {
 export class DashboardComponent implements OnInit {
   private localDb = inject(LocalDbService);
   private router = inject(Router);
-  private platformId = inject(PLATFORM_ID); // 👈 Injetamos o verificador de ambiente
+  private platformId = inject(PLATFORM_ID);
+  private supabaseService = inject(SupabaseService); // 👇 Injete o serviço aqui
 
   listas: ListaViewModel[] = [];
-
   isModalOpen = false;
   novaListaNome = '';
   novaListaOrcamento: number | null = null;
+
+  // 👇 NOVAS FUNÇÕES DO MENU 👇
+  async sair() {
+    const confirmar = confirm('Tem certeza que deseja sair do aplicativo?');
+    if (confirmar) {
+      await this.supabaseService.supabase.auth.signOut();
+      this.router.navigate(['/auth']);
+    }
+  }
+
+  abrirConfiguracoes() {
+    // Por enquanto, apenas um alerta para testar o clique
+    alert('A tela de configurações está em construção!');
+  }
 
   async ngOnInit() {
     // 👇 Bloqueia a execução no servidor do Vercel. Só roda no celular/navegador!

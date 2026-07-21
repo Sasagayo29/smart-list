@@ -4,8 +4,10 @@
     <div class="brand"><h3>SL</h3></div>
     <ul class="nav-links">
       <li class="active">Minhas Listas</li>
-      <li>Configurações</li>
-      <li>Sair</li>
+      
+      <!-- 👇 Adicionamos os eventos de clique aqui 👇 -->
+      <li (click)="abrirConfiguracoes()">Configurações</li>
+      <li (click)="sair()" style="color: var(--danger); font-weight: 600;">Sair</li>
     </ul>
     <div class="spacer"></div>
   </nav>
