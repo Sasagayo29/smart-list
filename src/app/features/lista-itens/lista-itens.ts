@@ -65,6 +65,15 @@ export class ListaItensComponent implements OnInit {
     }
   }
 
+  usarValorCalculadora() {
+    this.calcular(); // Garante que a conta foi fechada
+    if (this.calcVisor !== 'Erro' && this.calcVisor !== '') {
+      // Converte o texto do visor de volta para número e joga no input de preço
+      this.novoItemPreco = parseFloat(this.calcVisor); 
+    }
+    this.fecharCalculadora();
+  }
+
   async ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
       this.listaId = this.route.snapshot.paramMap.get('id') || '';
