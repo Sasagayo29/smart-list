@@ -25,15 +25,19 @@
       </div>
       
       <div class="header-actions">
-        <button class="btn-primary" (click)="abrirModal()">+ Produto Manual</button>
-        
-        <!-- Botões integrados de Câmera e Nuvem -->
-        <button class="btn-primary btn-camera" (click)="abrirCamera()" [disabled]="isProcessandoImagem">
-            {{ isProcessandoImagem ? '⏳ Lendo...' : '📷 Ler Etiqueta' }}
+        <!-- Adicionar Produto Manual -->
+        <button class="btn-icon btn-primary" (click)="abrirModal()" title="Adicionar Manualmente">
+          ➕
         </button>
         
-        <button class="btn-secondary btn-sincronizar" (click)="sincronizarNuvem()" [disabled]="isSincronizando">
-            {{ isSincronizando ? '⏳ Sincronizando...' : '☁️ Nuvem' }}
+        <!-- Ler Etiqueta (Câmera) -->
+        <button class="btn-icon btn-primary" (click)="abrirCamera()" [disabled]="isProcessandoImagem" title="Ler Etiqueta">
+          {{ isProcessandoImagem ? '⏳' : '📷' }}
+        </button>
+        
+        <!-- Nuvem (Sincronizar) -->
+        <button class="btn-icon btn-secondary" (click)="sincronizarNuvem()" [disabled]="isSincronizando" title="Sincronizar Nuvem">
+          {{ isSincronizando ? '⏳' : '☁️' }}
         </button>
       </div>
     </header>

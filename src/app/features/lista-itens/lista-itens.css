@@ -267,6 +267,15 @@
   .item-actions-row {
     width: 100%;
     justify-content: space-between;
+  }  
+  .header-actions {
+    flex-direction: row; /* Mantém os ícones lado a lado no celular */
+    justify-content: flex-end;
+    width: 100%;
+  }
+
+  .header-actions button {
+    width: 44px; /* Impede que os botões estiquem (sobrescrevendo o 100% antigo) */
   }
 }
 
@@ -437,4 +446,47 @@
 
 .calc-btn.row-span {
   grid-row: span 2;
+}
+
+/* =========================================
+   BOTÕES MINIMALISTAS (Apenas Ícones)
+   ========================================= */
+.btn-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 44px; /* Tamanho de toque ergonômico padrão */
+  height: 44px;
+  border-radius: var(--radius-md);
+  font-size: 1.3rem;
+  padding: 0;
+  cursor: pointer;
+  transition: var(--transition);
+  border: none;
+}
+
+.btn-icon.btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-icon.btn-secondary {
+  background-color: var(--bg-card); /* Usa a cor do cartão para o modo claro/escuro */
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+}
+
+.btn-icon:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-icon:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.btn-icon:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
