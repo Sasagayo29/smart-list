@@ -1,17 +1,31 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { SwUpdate } from '@angular/service-worker'; // 👇 Importa o verificador do PWA
+import { SwUpdate } from '@angular/service-worker';
+import { ToastComponent } from './shared/components/toast'; // 👇 Importação
+import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
-  template: `<router-outlet></router-outlet>`,
+  imports: [RouterOutlet, ToastComponent], // 👇 Adicionado aqui
+  template: `
+    <router-outlet></router-outlet>
+    <app-toast></app-toast> <!-- 👇 Colocado na raiz do app -->
+  `,
 })
 export class AppComponent implements OnInit {
   private swUpdate = inject(SwUpdate);
+  private platformId = inject(PLATFORM_ID);
 
   ngOnInit() {
+    if (isPlatformBrowser(this.platformId)) {
+      // 🌟 LÓGICA DE INICIALIZAÇÃO DO TEMA 🌟
+      // Ao abrir o app ou atualizar a página, lê o que foi salvo
+      const temaSalvo = localStorage.getItem('smartlist-tema');
+      if (temaSalvo && temaSalvo !== 'sistema') {
+        document.body.classList.add(`tema-${temaSalvo}`);
+      }
+    }
     // Verifica se o Service Worker está ativo no navegador/celular
     if (this.swUpdate.isEnabled) {
       // Fica escutando por novas versões publicadas no Vercel

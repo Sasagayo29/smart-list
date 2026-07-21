@@ -85,3 +85,23 @@
     </div>
   </div>
 </div>
+
+<!-- Modal de Configurações -->
+<div class="modal-overlay" *ngIf="isConfigOpen">
+  <div class="modal-content">
+    <h3>Configurações</h3>
+    
+    <div class="form-group" style="margin-top: 1.5rem;">
+      <label>Aparência do Aplicativo</label>
+      <div class="theme-options">
+        <button class="btn-secondary" [class.active]="temaEscolhido === 'sistema'" (click)="mudarTema('sistema')">📱 Sistema</button>
+        <button class="btn-secondary" [class.active]="temaEscolhido === 'claro'" (click)="mudarTema('claro')">☀️ Claro</button>
+        <button class="btn-secondary" [class.active]="temaEscolhido === 'escuro'" (click)="mudarTema('escuro')">🌙 Escuro</button>
+      </div>
+    </div>
+
+    <div class="modal-actions" style="margin-top: 2.5rem;">
+      <button class="btn-primary" style="width: 100%;" (click)="fecharConfiguracoes()">Concluído</button>
+    </div>
+  </div>
+</div>

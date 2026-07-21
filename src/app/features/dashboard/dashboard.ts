@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { ToastService } from '../../shared/components/toast'; // 👇 Importe o serviço
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LocalDbService } from '../../core/services/db/local-db';
@@ -24,24 +25,51 @@ export class DashboardComponent implements OnInit {
   private router = inject(Router);
   private platformId = inject(PLATFORM_ID);
   private supabaseService = inject(SupabaseService); // 👇 Injete o serviço aqui
+  private toastService = inject(ToastService); // 👇 Injeção do Toast
 
   listas: ListaViewModel[] = [];
   isModalOpen = false;
   novaListaNome = '';
   novaListaOrcamento: number | null = null;
+  // Novas variáveis
+  isConfigOpen = false;
+  temaEscolhido = 'sistema';
 
-  // 👇 NOVAS FUNÇÕES DO MENU 👇
+  abrirConfiguracoes() {
+    // Lê o que está salvo para o botão acender corretamente
+    this.temaEscolhido = localStorage.getItem('smartlist-tema') || 'sistema';
+    this.isConfigOpen = true;
+  }
+
+  fecharConfiguracoes() {
+    this.isConfigOpen = false;
+  }
+
+  mudarTema(tema: string) {
+    this.temaEscolhido = tema;
+    
+    // Salva a escolha do usuário para sobreviver ao refresh da página
+    localStorage.setItem('smartlist-tema', tema);
+    
+    // Limpa as classes do body e aplica a nova
+    document.body.classList.remove('tema-claro', 'tema-escuro');
+    if (tema !== 'sistema') {
+      document.body.classList.add(`tema-${tema}`);
+    }
+
+    // Dispara a nova notificação elegante
+    this.toastService.mostrar(
+      tema === 'sistema' ? 'Tema automático ativado' : `Tema ${tema} ativado`
+    );
+  }
+
   async sair() {
     const confirmar = confirm('Tem certeza que deseja sair do aplicativo?');
     if (confirmar) {
       await this.supabaseService.supabase.auth.signOut();
+      this.toastService.mostrar('Sessão encerrada.'); // 👈 Usando Toast
       this.router.navigate(['/auth']);
     }
-  }
-
-  abrirConfiguracoes() {
-    // Por enquanto, apenas um alerta para testar o clique
-    alert('A tela de configurações está em construção!');
   }
 
   async ngOnInit() {

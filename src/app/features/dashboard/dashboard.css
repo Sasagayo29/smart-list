@@ -251,3 +251,28 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Botões de Tema do Painel de Configurações */
+.theme-options {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.theme-options button {
+  flex: 1;
+  padding: 0.75rem 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background-color: var(--secondary-color);
+  color: var(--text-muted);
+  transition: var(--transition);
+}
+
+.theme-options button.active {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}

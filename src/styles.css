@@ -217,3 +217,24 @@ body {
 .btn-cancel:hover {
   color: var(--text-main);
 }
+
+/* Sobrescritas Manuais de Tema */
+body.tema-claro {
+  --bg-main: #f9fafb;
+  --bg-card: #ffffff;
+  --text-main: #111827;
+  --text-muted: #6b7280;
+  --border-color: rgba(0, 0, 0, 0.05);
+  background-color: var(--bg-main);
+  color: var(--text-main);
+}
+
+body.tema-escuro {
+  --bg-main: #000000;
+  --bg-card: #151515;
+  --text-main: #f9fafb;
+  --text-muted: #9ca3af;
+  --border-color: rgba(255, 255, 255, 0.08);
+  background-color: var(--bg-main);
+  color: var(--text-main);
+}
