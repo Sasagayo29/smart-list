@@ -1,5 +1,5 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common'; // 👈 Adicionamos isPlatformBrowser
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LocalDbService } from '../../core/services/db/local-db';
@@ -20,16 +20,19 @@ interface ListaViewModel extends ListaCompra {
 export class DashboardComponent implements OnInit {
   private localDb = inject(LocalDbService);
   private router = inject(Router);
+  private platformId = inject(PLATFORM_ID); // 👈 Injetamos o verificador de ambiente
 
   listas: ListaViewModel[] = [];
 
-  // Controles do Modal
   isModalOpen = false;
   novaListaNome = '';
   novaListaOrcamento: number | null = null;
 
   async ngOnInit() {
-    await this.carregarListas();
+    // 👇 Bloqueia a execução no servidor do Vercel. Só roda no celular/navegador!
+    if (isPlatformBrowser(this.platformId)) {
+      await this.carregarListas();
+    }
   }
 
   async carregarListas() {
@@ -37,7 +40,6 @@ export class DashboardComponent implements OnInit {
     const listasProcessadas: ListaViewModel[] = [];
 
     for (const lista of listasBanco) {
-      // Usamos o "!" para garantir ao TypeScript que o id existe
       const itens = await this.localDb.itens.where('lista_id').equals(lista.id!).toArray();
       
       const gastoTotal = itens.reduce((acc, item) => {
@@ -57,7 +59,6 @@ export class DashboardComponent implements OnInit {
       });
     }
 
-    // Usamos o "!" para garantir ao TypeScript que a data existe
     this.listas = listasProcessadas.sort((a, b) => 
       new Date(b.created_at!).getTime() - new Date(a.created_at!).getTime()
     );
@@ -81,7 +82,6 @@ export class DashboardComponent implements OnInit {
       nome: this.novaListaNome,
       orcamento: this.novaListaOrcamento || 0,
       created_at: new Date().toISOString(),
-      // Preenchendo as propriedades exigidas pelo seu modelo:
       user_id: 'local', 
       finalizada: false 
     };
