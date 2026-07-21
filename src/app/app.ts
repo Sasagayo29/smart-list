@@ -7,13 +7,13 @@ import { isPlatformBrowser } from '@angular/common';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, ToastComponent], // 👇 Adicionado aqui
+  imports: [RouterOutlet, ToastComponent],
   template: `
     <router-outlet></router-outlet>
-    <app-toast></app-toast> <!-- 👇 Colocado na raiz do app -->
+    <app-toast></app-toast>
   `,
 })
-export class AppComponent implements OnInit {
+export class App implements OnInit { // 👈 A alteração é apenas nesta linha
   private swUpdate = inject(SwUpdate);
   private platformId = inject(PLATFORM_ID);
 
