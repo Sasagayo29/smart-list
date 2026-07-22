@@ -27,17 +27,17 @@
       <div class="header-actions">
         <!-- Adicionar Produto Manual -->
         <button class="btn-icon btn-primary" (click)="abrirModal()" title="Adicionar Manualmente">
-          ➕
+          <span class="material-symbols-rounded">add</span>
         </button>
         
         <!-- Ler Etiqueta (Câmera) -->
         <button class="btn-icon btn-primary" (click)="abrirCamera()" [disabled]="isProcessandoImagem" title="Ler Etiqueta">
-          {{ isProcessandoImagem ? '⏳' : '📷' }}
+          <span class="material-symbols-rounded">{{ isProcessandoImagem ? 'hourglass_empty' : 'photo_camera' }}</span>
         </button>
         
         <!-- Nuvem (Sincronizar) -->
         <button class="btn-icon btn-secondary" (click)="sincronizarNuvem()" [disabled]="isSincronizando" title="Sincronizar Nuvem">
-          {{ isSincronizando ? '⏳' : '☁️' }}
+          <span class="material-symbols-rounded">{{ isSincronizando ? 'sync' : 'cloud_upload' }}</span>
         </button>
       </div>
     </header>
@@ -73,8 +73,12 @@
             </div>
             
             <div style="display: flex; gap: 0.5rem;">
-              <button class="btn-secondary" style="padding: 0.5rem; border: none; font-size: 1.1rem; background: transparent;" (click)="abrirModal(item)" title="Editar Item">✏️</button>
-              <button class="btn-delete" (click)="excluirItem(item.id!)" title="Excluir Item">🗑️</button>
+              <button class="btn-secondary btn-icon" style="background: transparent; border: none; width: auto;" (click)="abrirModal(item)" title="Editar Item">
+                <span class="material-symbols-rounded" style="color: var(--text-muted);">edit</span>
+              </button>
+              <button class="btn-delete btn-icon" style="width: auto; height: auto;" (click)="excluirItem(item.id!)" title="Excluir Item">
+                <span class="material-symbols-rounded">delete</span>
+              </button>
             </div>
           </div>
         </div>
@@ -102,7 +106,9 @@
       <div class="form-group half">
         <label style="display: flex; justify-content: space-between; align-items: center;">
           Preço Unitário (R$)
-          <button type="button" style="background: none; border: none; color: var(--primary-color); cursor: pointer; font-size: 1.2rem;" (click)="abrirCalculadora()" title="Abrir Calculadora">🧮</button>
+          <button type="button" style="background: none; border: none; color: var(--primary-color); cursor: pointer;" (click)="abrirCalculadora()" title="Abrir Calculadora">
+            <span class="material-symbols-rounded" style="font-size: 1.3rem;">calculate</span>
+          </button>
         </label>
         <input type="number" [(ngModel)]="novoItemPreco" placeholder="0.00" step="0.01">
       </div>
@@ -117,7 +123,7 @@
 
 <!-- Botão Flutuante da Calculadora (FAB) -->
 <button class="fab-calculator" (click)="abrirCalculadora()">
-  🧮
+  <span class="material-symbols-rounded">calculate</span>
 </button>
 
 <!-- Bottom Sheet da Calculadora -->

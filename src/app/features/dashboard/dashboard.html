@@ -94,9 +94,18 @@
     <div class="form-group" style="margin-top: 1.5rem;">
       <label>Aparência do Aplicativo</label>
       <div class="theme-options">
-        <button class="btn-secondary" [class.active]="temaEscolhido === 'sistema'" (click)="mudarTema('sistema')">📱 Sistema</button>
-        <button class="btn-secondary" [class.active]="temaEscolhido === 'claro'" (click)="mudarTema('claro')">☀️ Claro</button>
-        <button class="btn-secondary" [class.active]="temaEscolhido === 'escuro'" (click)="mudarTema('escuro')">🌙 Escuro</button>
+        <button class="btn-secondary" [class.active]="temaEscolhido === 'sistema'" (click)="mudarTema('sistema')" style="display: flex; align-items: center; justify-content: center; gap: 0.25rem;">
+          <span class="material-symbols-rounded" style="font-size: 1.1rem;">smartphone</span>
+          Sistema
+        </button>
+        <button class="btn-secondary" [class.active]="temaEscolhido === 'claro'" (click)="mudarTema('claro')" style="display: flex; align-items: center; justify-content: center; gap: 0.25rem;">
+          <span class="material-symbols-rounded" style="font-size: 1.1rem;">light_mode</span>
+          Claro
+        </button>
+        <button class="btn-secondary" [class.active]="temaEscolhido === 'escuro'" (click)="mudarTema('escuro')" style="display: flex; align-items: center; justify-content: center; gap: 0.25rem;">
+          <span class="material-symbols-rounded" style="font-size: 1.1rem;">dark_mode</span>
+          Escuro
+        </button>
       </div>
     </div>
 
