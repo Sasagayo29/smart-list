@@ -52,16 +52,44 @@
 }
 
 /* Cabeçalho da Lista */
+/* Cabeçalho Fixo e Minimalista */
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 2rem;
-  background-color: var(--bg-card);
   padding: 1.5rem;
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
+  
+  /* 👇 Mágica do Cabeçalho Fixo 👇 */
+  position: sticky;
+  top: 1rem; /* Fica um pouco descolado do topo */
+  z-index: 100;
+  
+  /* Efeito de Vidro (Blur) para o fundo não embolar com o texto passando por trás */
+  background-color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Ajuste para o Modo Escuro no efeito de vidro */
+@media (prefers-color-scheme: dark) {
+  .page-header {
+    background-color: rgba(21, 21, 21, 0.85);
+  }
+}
+
+/* No celular, tira a margem superior do topo para grudar perfeitamente */
+@media (max-width: 768px) {
+  .page-header {
+    top: 0;
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg); /* Arredonda só embaixo */
+    border-top: none;
+    border-left: none;
+    border-right: none;
+  }
 }
 
 .title-row {

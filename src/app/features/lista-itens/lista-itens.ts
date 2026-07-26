@@ -1,4 +1,3 @@
-import { Component, inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms'; 
 import { ActivatedRoute, Router } from '@angular/router';
@@ -7,6 +6,7 @@ import { ListaCompra, ItemCompra } from '../../core/models/compra.modal';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { SupabaseService } from '../../core/services/supabase/supabase';
+import { Component, inject, OnInit, PLATFORM_ID, ChangeDetectorRef } from '@angular/core'; // 👈 Importar ChangeDetectorRef
 import { Camera, CameraResultType, CameraSource, CameraDirection } from '@capacitor/camera';
 
 @Component({
@@ -23,6 +23,7 @@ export class ListaItensComponent implements OnInit {
   private http = inject(HttpClient);
   private supabaseService = inject(SupabaseService);
   private platformId = inject(PLATFORM_ID);
+  private cdr = inject(ChangeDetectorRef); // 👈 Injetar aqui
 
   isProcessandoImagem = false; 
   isSincronizando = false; // Controle de loading para o botão de nuvem
@@ -90,6 +91,9 @@ export class ListaItensComponent implements OnInit {
     this.listaAtual = await this.localDb.listas.get(this.listaId);
     this.itens = await this.localDb.itens.where('lista_id').equals(this.listaId).toArray();
     this.calcularTotal();
+    
+    // 👈 Força o Angular a renderizar os itens novos ou recarregados instantaneamente
+    this.cdr.detectChanges(); 
   }
 
   calcularTotal() {
