@@ -49,11 +49,11 @@ export class SupabaseService {
     return await this.supabase.auth.signInWithPassword({ email, password });
   }
 
-  // 👇 NOVA FUNÇÃO ADICIONADA AQUI NO FINAL 👇
+  // 👇 CORREÇÃO: Tabela alterada de 'itens_lista' para 'itens' 👇
   async sincronizarItens(itensLocais: any[]) {
     try {
       const { data, error } = await this.supabase
-        .from('itens_lista')
+        .from('itens') // 👈 O erro estava aqui!
         .upsert(itensLocais);
 
       if (error) throw error;
@@ -64,11 +64,11 @@ export class SupabaseService {
     }
   }
 
-  // 👇 FUNÇÃO ANTI-HIBERNAÇÃO 👇
+  // 👇 CORREÇÃO: Tabela alterada de 'itens_lista' para 'itens' 👇
   async manterBancoAtivo() {
     try {
       // Faz uma leitura minúscula e super leve apenas para registrar atividade na nuvem
-      await this.supabase.from('itens_lista').select('id').limit(1);
+      await this.supabase.from('itens').select('id').limit(1); // 👈 E aqui também!
       console.log('☁️ Ping enviado ao Supabase: Banco ativo!');
     } catch (error) {
       // Falha silenciosa para não atrapalhar o usuário caso esteja sem internet

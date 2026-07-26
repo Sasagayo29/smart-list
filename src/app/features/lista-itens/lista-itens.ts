@@ -146,11 +146,10 @@ export class ListaItensComponent implements OnInit {
       }
       
       // 👇 O FILTRO DE DADOS 👇
-      // Removemos 'created_at', 'comprado' e 'user_id' antes de mandar pra nuvem
       const itensParaNuvem = itensLocais.map(item => {
         return {
           id: item.id,
-          lista_id: item.lista_id,
+          listaId: item.lista_id, // 👈 Aqui você coloca exatamente o nome que está no painel do Supabase!
           nome: item.nome,
           quantidade: item.quantidade,
           preco_unitario: item.preco_unitario
