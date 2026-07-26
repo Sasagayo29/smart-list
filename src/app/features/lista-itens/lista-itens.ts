@@ -149,7 +149,7 @@ export class ListaItensComponent implements OnInit {
       const itensParaNuvem = itensLocais.map(item => {
         return {
           id: item.id,
-          listaId: item.lista_id, // 👈 Aqui você coloca exatamente o nome que está no painel do Supabase!
+          lista_id: item.lista_id, // 👈 A CORREÇÃO ESTÁ AQUI: Deve ser exatamente "lista_id" com underline
           nome: item.nome,
           quantidade: item.quantidade,
           preco_unitario: item.preco_unitario
