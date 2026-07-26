@@ -154,8 +154,11 @@ export class DashboardComponent implements OnInit {
     await this.carregarListas(); 
   }
   
-  // Função para puxar o ícone e cor corretos na tela
-  getCategoriaDetalhes(categoriaId: string) {
+  // Adicionamos o " | undefined" para aceitar listas antigas que não têm categoria
+  getCategoriaDetalhes(categoriaId: string | undefined) {
+    if (!categoriaId) {
+      return this.categorias[4]; // Retorna a categoria 'Outros' (ícone cinza) como padrão
+    }
     return this.categorias.find(c => c.id === categoriaId) || this.categorias[4];
   }
 
