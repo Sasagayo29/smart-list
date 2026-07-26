@@ -135,7 +135,7 @@ export class ListaItensComponent implements OnInit {
 
   async sincronizarNuvem() {
     this.isSincronizando = true;
-    this.cdr.detectChanges(); // ⚡
+    this.cdr.detectChanges(); 
     
     try {
       const itensLocais = await this.localDb.itens.toArray();
@@ -145,17 +145,28 @@ export class ListaItensComponent implements OnInit {
         return;
       }
       
-      // Chama o Supabase (garanta que seu SupabaseService tenha esse método)
-      await this.supabaseService.sincronizarItens(itensLocais);
+      // 👇 O FILTRO DE DADOS 👇
+      // Removemos 'created_at', 'comprado' e 'user_id' antes de mandar pra nuvem
+      const itensParaNuvem = itensLocais.map(item => {
+        return {
+          id: item.id,
+          lista_id: item.lista_id,
+          nome: item.nome,
+          quantidade: item.quantidade,
+          preco_unitario: item.preco_unitario
+        };
+      });
+      
+      // Enviamos apenas o objeto filtrado
+      await this.supabaseService.sincronizarItens(itensParaNuvem);
       alert('Sincronização concluída com sucesso! ☁️');
       
     } catch (error: any) {
       console.error('Erro detalhado:', error);
-      // 🐛 Mostra o erro exato que o Supabase está retornando
-      alert(`Falha na nuvem: ${error.message || 'Erro de permissão ou conexão no Supabase.'}`);
+      alert(`Falha na nuvem: ${error.message || 'Erro de permissão no Supabase.'}`);
     } finally {
       this.isSincronizando = false;
-      this.cdr.detectChanges(); // ⚡
+      this.cdr.detectChanges(); 
     }
   }
 
