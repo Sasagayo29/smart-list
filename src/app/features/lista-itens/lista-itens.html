@@ -9,53 +9,33 @@
   </nav>
 
   <main class="main-content">
-    <header class="page-header">
-      <div class="header-title">
-        <div class="title-row">
-          <button class="btn-back" (click)="voltar()">← Voltar</button>
-          <h2>{{ listaAtual?.nome || 'Carregando...' }}</h2>
-        </div>
-        
-        <div class="resumo-financeiro" *ngIf="listaAtual">
-          <span class="total-gasto">Total Gasto: <strong>R$ {{ totalLista | number:'1.2-2' }}</strong></span>
-          <span class="orcamento-info" *ngIf="listaAtual.orcamento > 0">
-            / Orçamento: R$ {{ listaAtual.orcamento | number:'1.2-2' }}
-          </span>
-        </div>
+    <!-- 🌟 Dynamic Island Premium 🌟 -->
+    <div class="dynamic-island-container">
+      
+      <div class="dynamic-island">
+        <button class="island-btn-back" (click)="voltar()" title="Voltar">←</button>
+        <span class="island-title">{{ listaAtual?.nome || 'Carregando...' }}</span>
+        <div class="island-separator"></div>
+        <span class="island-total">R$ {{ totalLista | number:'1.2-2' }}</span>
       </div>
       
       <div class="header-actions">
-        <!-- Adicionar Produto Manual -->
-        <button class="btn-icon btn-primary" (click)="abrirModal()" title="Adicionar Manualmente">
+        <button class="btn-icon btn-primary" (click)="abrirModal()" title="Adicionar Manual">
           <span class="material-symbols-rounded">add</span>
         </button>
-        
-        <!-- Ler Etiqueta (Câmera) -->
-        <button class="btn-icon btn-primary" (click)="abrirCamera()" [disabled]="isProcessandoImagem" title="Ler Etiqueta">
+        <button class="btn-icon btn-primary" (click)="abrirCamera()" [disabled]="isProcessandoImagem">
           <span class="material-symbols-rounded">{{ isProcessandoImagem ? 'hourglass_empty' : 'photo_camera' }}</span>
         </button>
-        
-        <!-- Nuvem (Sincronizar) -->
-        <button class="btn-icon btn-secondary" (click)="sincronizarNuvem()" [disabled]="isSincronizando" title="Sincronizar Nuvem">
+        <button class="btn-icon btn-secondary" (click)="sincronizarNuvem()" [disabled]="isSincronizando">
           <span class="material-symbols-rounded">{{ isSincronizando ? 'sync' : 'cloud_upload' }}</span>
         </button>
       </div>
-    </header>
 
+    </div>
+    <!-- 🌟 Fim da Dynamic Island 🌟 -->
+
+    <!-- 👇 A DIV CONTENT-AREA RESTAURADA 👇 -->
     <div class="content-area">
-      
-      <!-- 👇 BLOCO DE ORDENAÇÃO CORRIGIDO E NO LUGAR CERTO 👇 -->
-      <div class="filtros-container" *ngIf="itens.length > 0">
-        <label for="ordenacao">Ordenar por:</label>
-        <select id="ordenacao" [(ngModel)]="criterioOrdenacao" (change)="ordenarLista()">
-          <option value="recentes">Mais Recentes</option>
-          <option value="nome">Ordem Alfabética (A-Z)</option>
-          <option value="maior-preco">Maior Valor Total</option>
-          <option value="menor-preco">Menor Valor Total</option>
-        </select>
-      </div>
-      <!-- 👆 FIM DO BLOCO DE ORDENAÇÃO 👆 -->
-
       <p class="empty-state" *ngIf="itens.length === 0">
         Sua lista está vazia. Adicione um produto manualmente ou use a câmera!
       </p>

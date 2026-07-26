@@ -51,47 +51,6 @@
   flex-direction: column;
 }
 
-/* Cabeçalho da Lista */
-/* Cabeçalho Fixo e Minimalista */
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 2rem;
-  padding: 1.5rem;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
-  
-  /* 👇 Mágica do Cabeçalho Fixo 👇 */
-  position: sticky;
-  top: 1rem; /* Fica um pouco descolado do topo */
-  z-index: 100;
-  
-  /* Efeito de Vidro (Blur) para o fundo não embolar com o texto passando por trás */
-  background-color: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
-/* Ajuste para o Modo Escuro no efeito de vidro */
-@media (prefers-color-scheme: dark) {
-  .page-header {
-    background-color: rgba(21, 21, 21, 0.85);
-  }
-}
-
-/* No celular, tira a margem superior do topo para grudar perfeitamente */
-@media (max-width: 768px) {
-  .page-header {
-    top: 0;
-    border-radius: 0 0 var(--radius-lg) var(--radius-lg); /* Arredonda só embaixo */
-    border-top: none;
-    border-left: none;
-    border-right: none;
-  }
-}
-
 .title-row {
   display: flex;
   align-items: center;
@@ -125,11 +84,6 @@
 .total-gasto strong {
   color: var(--primary-color);
   font-size: 1.2rem;
-}
-
-.header-actions {
-  display: flex;
-  gap: 0.75rem;
 }
 
 /* Lista de Produtos */
@@ -184,91 +138,6 @@
   border: 1px dashed var(--border-color);
 }
 
-/* =========================================
-   RESPONSIVIDADE (Visual de App / Mobile)
-   ========================================= */
-@media (max-width: 768px) {
-  .layout-container {
-    flex-direction: column;
-    padding-bottom: 70px;
-  }
-
-  /* Bottom Navigation */
-  .vertical-toolbar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 70px;
-    flex-direction: row;
-    justify-content: center;
-    padding: 0;
-    border-right: none;
-    border-top: 1px solid var(--border-color);
-    z-index: 1000;
-  }
-
-  .brand { display: none; }
-
-  .nav-links {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    align-items: center;
-    height: 100%;
-  }
-
-  .nav-links li {
-    padding: 0.5rem 1rem;
-    border-left: none;
-    border-bottom: 3px solid transparent;
-  }
-
-  .nav-links li.active {
-    border-left: none;
-    border-bottom: 3px solid var(--primary-color);
-  }
-
-  /* Ajustes do Cabeçalho e Conteúdo */
-  .main-content {
-    padding: 1rem;
-  }
-
-  .page-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 1.5rem;
-    padding: 1rem;
-  }
-
-  .title-row {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .header-actions {
-    flex-direction: column; /* Empilha os botões no celular */
-    width: 100%;
-  }
-
-  .header-actions button {
-    width: 100%; 
-  }
-
-  /* Cards de Produto */
-  .item-card {
-    padding: 1rem;
-    flex-direction: column; /* Coloca o subtotal embaixo do nome do produto */
-    align-items: flex-start;
-    gap: 0.75rem;
-  }
-
-  .item-subtotal {
-    width: 100%;
-    text-align: right; /* Alinha o valor à direita para facilitar leitura */
-  }
-}
-
 .item-actions-row {
   display: flex;
   align-items: center;
@@ -288,23 +157,6 @@
 .btn-delete:hover {
   background-color: #fee2e2;
   transform: scale(1.05);
-}
-
-/* Garante que no celular o botão não fique esmagado */
-@media (max-width: 768px) {
-  .item-actions-row {
-    width: 100%;
-    justify-content: space-between;
-  }  
-  .header-actions {
-    flex-direction: row; /* Mantém os ícones lado a lado no celular */
-    justify-content: flex-end;
-    width: 100%;
-  }
-
-  .header-actions button {
-    width: 44px; /* Impede que os botões estiquem (sobrescrevendo o 100% antigo) */
-  }
 }
 
 /* Filtros e Ordenação */
@@ -337,11 +189,110 @@
 }
 
 /* =========================================
+   DYNAMIC ISLAND (Cabeçalho Flutuante)
+   ========================================= */
+.dynamic-island-container {
+  position: sticky;
+  top: 15px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 2rem;
+  pointer-events: none;
+}
+
+.dynamic-island {
+  background-color: #000000;
+  color: #ffffff;
+  border-radius: 99px;
+  padding: 0.5rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  pointer-events: auto;
+  transition: var(--transition);
+}
+
+@media (prefers-color-scheme: dark) {
+  .dynamic-island {
+    background-color: #1c1c1e;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+.island-btn-back {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  font-size: 1.1rem;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.island-title {
+  font-size: 0.9rem;
+  font-weight: 500;
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.island-separator {
+  width: 1px;
+  height: 18px;
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.island-total {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #34d399;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.75rem;
+  pointer-events: auto;
+  background-color: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 0.5rem;
+  border-radius: 99px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+}
+
+@media (prefers-color-scheme: dark) {
+  .header-actions { background-color: rgba(30, 30, 30, 0.7); }
+}
+
+/* =========================================
+   CORREÇÃO DE CAMADAS (Modais e Calculadora)
+   ========================================= */
+.modal-overlay {
+  z-index: 9000;
+}
+
+.bottom-sheet-overlay {
+  z-index: 9998 !important; 
+}
+
+.bottom-sheet {
+  z-index: 9999 !important; 
+}
+
+/* =========================================
    FAB E CALCULADORA (Premium UI)
    ========================================= */
 .fab-calculator {
   position: fixed;
-  bottom: 90px; /* Acima da barra de navegação no celular */
+  bottom: 90px;
   right: 20px;
   width: 60px;
   height: 60px;
@@ -360,7 +311,6 @@
   transform: scale(0.9);
 }
 
-/* Fundo Escuro que aparece quando a aba sobe */
 .bottom-sheet-overlay {
   position: fixed;
   top: 0;
@@ -368,7 +318,7 @@
   width: 100%;
   height: 100%;
   background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(4px); /* Efeito de vidro Premium */
+  backdrop-filter: blur(4px);
   z-index: 999;
   opacity: 0;
   pointer-events: none;
@@ -380,7 +330,6 @@
   pointer-events: auto;
 }
 
-/* Aba Deslizante (Bottom Sheet) */
 .bottom-sheet {
   position: fixed;
   bottom: -100%;
@@ -391,7 +340,7 @@
   box-shadow: var(--shadow-up);
   z-index: 1000;
   transition: bottom 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-  padding: 1.5rem 1.5rem 3rem 1.5rem; /* Margem extra embaixo pro celular */
+  padding: 1.5rem 1.5rem 3rem 1.5rem;
 }
 
 .bottom-sheet.active {
@@ -415,7 +364,6 @@
   color: var(--text-muted);
 }
 
-/* Grid da Calculadora */
 .calc-visor {
   background-color: var(--bg-card);
   border-radius: var(--radius-md);
@@ -483,7 +431,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 44px; /* Tamanho de toque ergonômico padrão */
+  width: 44px;
   height: 44px;
   border-radius: var(--radius-md);
   font-size: 1.3rem;
@@ -500,7 +448,7 @@
 }
 
 .btn-icon.btn-secondary {
-  background-color: var(--bg-card); /* Usa a cor do cartão para o modo claro/escuro */
+  background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   color: var(--text-main);
 }
@@ -517,4 +465,85 @@
 .btn-icon:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* =========================================
+   RESPONSIVIDADE (Visual de App / Mobile)
+   ========================================= */
+@media (max-width: 768px) {
+  .layout-container {
+    flex-direction: column;
+    padding-bottom: 70px;
+  }
+
+  .vertical-toolbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 70px;
+    flex-direction: row;
+    justify-content: center;
+    padding: 0;
+    border-right: none;
+    border-top: 1px solid var(--border-color);
+    z-index: 1000;
+  }
+
+  .brand { display: none; }
+
+  .nav-links {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    height: 100%;
+  }
+
+  .nav-links li {
+    padding: 0.5rem 1rem;
+    border-left: none;
+    border-bottom: 3px solid transparent;
+  }
+
+  .nav-links li.active {
+    border-left: none;
+    border-bottom: 3px solid var(--primary-color);
+  }
+
+  .main-content {
+    padding: 1rem;
+  }
+
+  .title-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header-actions {
+    flex-direction: row; 
+    justify-content: flex-end;
+    width: 100%;
+  }
+
+  .header-actions button {
+    width: 44px;
+  }
+
+  .item-card {
+    padding: 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .item-subtotal {
+    width: 100%;
+    text-align: right;
+  }
+
+  .item-actions-row {
+    width: 100%;
+    justify-content: space-between;
+  }  
 }

@@ -1,18 +1,15 @@
+import { Component, inject, OnInit, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { FormsModule } from '@angular/forms'; 
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LocalDbService } from '../../core/services/db/local-db';
-import { ListaCompra, ItemCompra } from '../../core/models/compra.modal';
-import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
 import { SupabaseService } from '../../core/services/supabase/supabase';
-import { Component, inject, OnInit, PLATFORM_ID, ChangeDetectorRef } from '@angular/core'; // 👈 Importar ChangeDetectorRef
-import { Camera, CameraResultType, CameraSource, CameraDirection } from '@capacitor/camera';
+import { ListaCompra, ItemCompra } from '../../core/models/compra.modal';
 
 @Component({
   selector: 'app-lista-itens',
   standalone: true,
-  imports: [CommonModule, FormsModule], 
+  imports: [CommonModule, FormsModule],
   templateUrl: './lista-itens.html',
   styleUrls: ['./lista-itens.css']
 })
@@ -20,70 +17,34 @@ export class ListaItensComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private localDb = inject(LocalDbService);
-  private http = inject(HttpClient);
   private supabaseService = inject(SupabaseService);
+  private cdr = inject(ChangeDetectorRef); // 👈 O motor de velocidade da tela
   private platformId = inject(PLATFORM_ID);
-  private cdr = inject(ChangeDetectorRef); // 👈 Injetar aqui
-
-  isProcessandoImagem = false; 
-  isSincronizando = false; // Controle de loading para o botão de nuvem
 
   listaId: string = '';
   listaAtual: ListaCompra | undefined;
   itens: ItemCompra[] = [];
   totalLista: number = 0;
-  // Variável de Ordenação
-  criterioOrdenacao = 'recentes';
 
-  // Variáveis do Modal
+  // Controles de UI
   isModalOpen = false;
+  isProcessandoImagem = false;
+  isSincronizando = false;
+  
+  // Controles do Formulário
+  itemEmEdicaoId: string | null = null;
   novoItemNome = '';
   novoItemQtd = 1;
   novoItemPreco: number | null = null;
-  itemEmEdicaoId: string | null = null; // 👇 Nova variável de controle
-  // Variáveis da Calculadora
+
+  // Controles da Calculadora
   isCalcOpen = false;
   calcVisor = '';
 
-  abrirCalculadora() { this.isCalcOpen = true; }
-  fecharCalculadora() { this.isCalcOpen = false; }
-  
-  addCalc(valor: string) {
-    if (this.calcVisor === 'Erro') this.calcVisor = '';
-    this.calcVisor += valor;
-  }
-
-  limparCalc() { this.calcVisor = ''; }
-
-  calcular() {
-    try {
-      // Cria uma função segura para avaliar a expressão matemática
-      const resultado = new Function('return ' + this.calcVisor)();
-      // Limita a 2 casas decimais se for um número quebrado
-      this.calcVisor = Number.isInteger(resultado) ? resultado.toString() : resultado.toFixed(2);
-    } catch (e) {
-      this.calcVisor = 'Erro';
-    }
-  }
-
-  usarValorCalculadora() {
-    this.calcular(); // Garante que a conta foi fechada
-    if (this.calcVisor !== 'Erro' && this.calcVisor !== '') {
-      // Converte o texto do visor de volta para número e joga no input de preço
-      this.novoItemPreco = parseFloat(this.calcVisor); 
-    }
-    this.fecharCalculadora();
-  }
-
-  async ngOnInit() {
-    if (isPlatformBrowser(this.platformId)) {
-      this.listaId = this.route.snapshot.paramMap.get('id') || '';
-      
-      if (this.listaId) {
-        await this.carregarDados();
-      } else {
-        this.voltar();
-      }
+  ngOnInit() {
+    this.listaId = this.route.snapshot.paramMap.get('id') || '';
+    if (this.listaId && isPlatformBrowser(this.platformId)) {
+      this.carregarDados();
     }
   }
 
@@ -92,54 +53,35 @@ export class ListaItensComponent implements OnInit {
     this.itens = await this.localDb.itens.where('lista_id').equals(this.listaId).toArray();
     this.calcularTotal();
     
-    // 👈 Força o Angular a renderizar os itens novos ou recarregados instantaneamente
+    // ⚡ Força a tela a atualizar no mesmo milissegundo que os dados chegam
     this.cdr.detectChanges(); 
   }
 
   calcularTotal() {
-    this.totalLista = this.itens.reduce((acc, item) => {
-      return acc + (item.quantidade * (item.preco_unitario || 0));
-    }, 0);
+    this.totalLista = this.itens.reduce((total, item) => total + (item.quantidade * item.preco_unitario), 0);
   }
 
-  ordenarLista() {
-    switch (this.criterioOrdenacao) {
-      case 'nome':
-        this.itens.sort((a, b) => a.nome.localeCompare(b.nome));
-        break;
-      case 'maior-preco':
-        this.itens.sort((a, b) => 
-          (b.preco_unitario * b.quantidade) - (a.preco_unitario * a.quantidade)
-        );
-        break;
-      case 'menor-preco':
-        this.itens.sort((a, b) => 
-          (a.preco_unitario * a.quantidade) - (b.preco_unitario * b.quantidade)
-        );
-        break;
-      default:
-        // Ordem original (como foi inserido no banco)
-        this.carregarDados(); 
-        break;
-    }
+  voltar() {
+    this.router.navigate(['/dashboard']);
   }
 
-  // 👇 Função abrirModal atualizada para receber um item opcional
+  // ==========================================
+  // MODAIS E FORMULÁRIOS
+  // ==========================================
   abrirModal(item?: ItemCompra) {
     if (item) {
-      // Modo Edição: preenche os dados com o item selecionado
       this.itemEmEdicaoId = item.id!;
       this.novoItemNome = item.nome;
       this.novoItemQtd = item.quantidade;
       this.novoItemPreco = item.preco_unitario;
     } else {
-      // Modo Criação: limpa tudo
       this.itemEmEdicaoId = null;
       this.novoItemNome = '';
       this.novoItemQtd = 1;
       this.novoItemPreco = null;
     }
     this.isModalOpen = true;
+    this.cdr.detectChanges(); // ⚡ Abertura instantânea
   }
 
   fecharModal() {
@@ -148,110 +90,114 @@ export class ListaItensComponent implements OnInit {
     this.novoItemNome = '';
     this.novoItemQtd = 1;
     this.novoItemPreco = null;
+    this.cdr.detectChanges(); // ⚡ Fechamento instantâneo
   }
 
-  // 👇 Função salvarItem atualizada para decidir entre Add ou Update
   async salvarItem() {
-    if (!this.novoItemNome) return;
+    if (!this.novoItemNome || this.novoItemQtd < 1) return;
+
+    const itemSalvar: ItemCompra = {
+      id: this.itemEmEdicaoId || this.localDb.generateUUID(),
+      lista_id: this.listaId,
+      nome: this.novoItemNome,
+      quantidade: this.novoItemQtd,
+      preco_unitario: this.novoItemPreco || 0,
+      codigo_barras: undefined, // 👈 O erro estava aqui. Trocamos null por undefined!
+      comprado: false,
+      created_at: new Date().toISOString(),
+      user_id: 'local'
+    };
 
     if (this.itemEmEdicaoId) {
-      // Atualiza o item existente no Dexie/IndexedDB
-      await this.localDb.itens.update(this.itemEmEdicaoId, {
-        nome: this.novoItemNome,
-        quantidade: this.novoItemQtd,
-        preco_unitario: this.novoItemPreco || 0
-      });
+      await this.localDb.itens.update(this.itemEmEdicaoId, itemSalvar);
     } else {
-      // Cria um item novo
-      const novoItem: ItemCompra = {
-        id: this.localDb.generateUUID(),
-        lista_id: this.listaId,
-        nome: this.novoItemNome,
-        quantidade: this.novoItemQtd,
-        preco_unitario: this.novoItemPreco || 0,
-        created_at: new Date().toISOString()
-      };
-      await this.localDb.itens.add(novoItem);
+      await this.localDb.itens.add(itemSalvar);
     }
-    
+
     this.fecharModal();
-    await this.carregarDados(); 
+    await this.carregarDados();
   }
 
-  async abrirCamera() {
-    try {
-      const image = await Camera.getPhoto({
-        quality: 90,
-        allowEditing: false,
-        resultType: CameraResultType.Base64,
-        source: CameraSource.Camera,
-        direction: CameraDirection.Rear
-      });
-
-      if (image.base64String) {
-        this.isProcessandoImagem = true; 
-        
-        try {
-          const payload = { image_base64: image.base64String };
-          const resposta = await firstValueFrom(
-            this.http.post<any>('http://127.0.0.1:8000/extrair-etiqueta', payload)
-          );
-
-          this.novoItemNome = resposta.nome;
-          this.novoItemPreco = resposta.preco;
-          this.novoItemQtd = 1;
-          
-          this.abrirModal();
-
-        } catch (apiError) {
-          console.error('Erro na API:', apiError);
-          alert('Falha ao processar a etiqueta com a IA. O servidor Python está rodando?');
-        } finally {
-          this.isProcessandoImagem = false; 
-        }
-      }
-      
-    } catch (error) {
-      console.error('Câmera fechada ou sem permissão', error);
-    }
-  }
-
-  async excluirItem(itemId: string) {
-    // Pede uma confirmação simples nativa do navegador/celular
-    const confirmar = confirm('Tem certeza que deseja remover este produto da lista?');
-    
+  async excluirItem(id: string) {
+    const confirmar = confirm('Tem certeza que deseja excluir este produto?');
     if (confirmar) {
-      await this.localDb.itens.delete(itemId);
-      await this.carregarDados(); // Recarrega a tela para recalcular o total da compra automaticamente
+      await this.localDb.itens.delete(id);
+      await this.carregarDados();
     }
+  }
+
+  // ==========================================
+  // NUVEM E CÂMERA
+  // ==========================================
+  abrirCamera() {
+    alert('Recurso de leitura de etiqueta em desenvolvimento!');
   }
 
   async sincronizarNuvem() {
     this.isSincronizando = true;
+    this.cdr.detectChanges(); // ⚡
     
     try {
-      // Usa a instância localDb que já estava injetada para buscar os itens
       const itensLocais = await this.localDb.itens.toArray();
-      
       if (itensLocais.length === 0) {
-        alert('A lista está vazia, não há nada para sincronizar.');
+        alert('A lista está vazia. Não há o que sincronizar.');
         this.isSincronizando = false;
         return;
       }
-
+      
+      // Chama o Supabase (garanta que seu SupabaseService tenha esse método)
       await this.supabaseService.sincronizarItens(itensLocais);
+      alert('Sincronização concluída com sucesso! ☁️');
       
-      alert('Sincronização concluída com sucesso! Seus dados estão na nuvem. ☁️');
-      
-    } catch (error) {
-      console.error('Erro na sincronização:', error);
-      alert('Falha ao sincronizar. Verifique sua conexão e tente novamente.');
+    } catch (error: any) {
+      console.error('Erro detalhado:', error);
+      // 🐛 Mostra o erro exato que o Supabase está retornando
+      alert(`Falha na nuvem: ${error.message || 'Erro de permissão ou conexão no Supabase.'}`);
     } finally {
       this.isSincronizando = false;
+      this.cdr.detectChanges(); // ⚡
     }
   }
 
-  voltar() {
-    this.router.navigate(['/dashboard']);
+  // ==========================================
+  // LÓGICA DA CALCULADORA
+  // ==========================================
+  abrirCalculadora() { 
+    this.isCalcOpen = true; 
+    this.cdr.detectChanges(); 
+  }
+  
+  fecharCalculadora() { 
+    this.isCalcOpen = false; 
+    this.cdr.detectChanges(); 
+  }
+
+  limparCalc() {
+    this.calcVisor = '';
+  }
+
+  addCalc(valor: string) {
+    this.calcVisor += valor;
+  }
+
+  calcular() {
+    try {
+      // Usamos eval com cuidado aqui, apenas para matemática básica interna
+      const resultado = eval(this.calcVisor);
+      this.calcVisor = String(resultado);
+    } catch (e) {
+      this.calcVisor = 'Erro';
+      setTimeout(() => this.limparCalc(), 1500);
+    }
+  }
+
+  usarValorCalculadora() {
+    if (this.calcVisor && this.calcVisor !== 'Erro') {
+      const valorNumerico = parseFloat(this.calcVisor);
+      if (!isNaN(valorNumerico)) {
+        this.novoItemPreco = parseFloat(valorNumerico.toFixed(2));
+      }
+    }
+    this.fecharCalculadora();
   }
 }
