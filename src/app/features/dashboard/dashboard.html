@@ -36,7 +36,16 @@
               </span>
               <h3>{{ lista.nome }}</h3>
             </div>
-            <span class="date-badge">{{ lista.created_at | date:'dd/MM' }}</span>
+            
+            <!-- 👇 Botões de Ação na Lista 👇 -->
+            <div style="display: flex; gap: 0.25rem;">
+              <button class="btn-icon" style="background: transparent; color: var(--text-muted); width: 32px; height: 32px;" (click)="abrirModalEditarLista(lista, $event)" title="Editar Lista">
+                <span class="material-symbols-rounded" style="font-size: 1.2rem;">edit</span>
+              </button>
+              <button class="btn-icon" style="background: transparent; color: var(--danger); width: 32px; height: 32px;" (click)="excluirLista(lista.id, $event)" title="Excluir Lista">
+                <span class="material-symbols-rounded" style="font-size: 1.2rem;">delete</span>
+              </button>
+            </div>
           </div>
           
           <div class="card-body">
