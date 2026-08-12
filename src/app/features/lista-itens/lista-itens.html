@@ -9,36 +9,59 @@
   </nav>
 
   <main class="main-content">
-    <!-- 🌟 Dynamic Island Premium 🌟 -->
+    <!-- 🌟 Ilha Dinâmica Unificada 🌟 -->
     <div class="dynamic-island-container">
-      
-      <div class="dynamic-island">
-        <button class="island-btn-back" (click)="voltar()" title="Voltar">←</button>
-        <span class="island-title">{{ listaAtual?.nome || 'Carregando...' }}</span>
-        <div class="island-separator"></div>
-        <span class="island-total">R$ {{ totalLista | number:'1.2-2' }}</span>
-      </div>
-      
-      <div class="header-actions">
-        <button class="btn-icon btn-primary" (click)="abrirModal()" title="Adicionar Manual">
-          <span class="material-symbols-rounded">add</span>
+      <div class="dynamic-island unified-island">
+        
+        <!-- Voltar -->
+        <button class="island-icon" (click)="voltar()" title="Voltar">
+          <span class="material-symbols-rounded">arrow_back_ios_new</span>
         </button>
-        <button class="btn-icon btn-primary" (click)="abrirCamera()" [disabled]="isProcessandoImagem">
-          <span class="material-symbols-rounded">{{ isProcessandoImagem ? 'hourglass_empty' : 'photo_camera' }}</span>
-        </button>
-        <button class="btn-icon btn-secondary" (click)="sincronizarNuvem()" [disabled]="isSincronizando">
-          <span class="material-symbols-rounded">{{ isSincronizando ? 'sync' : 'cloud_upload' }}</span>
-        </button>
-      </div>
 
+        <!-- Informações Centrais -->
+        <div class="island-center">
+          <span class="island-title">{{ listaAtual?.nome || 'Carregando...' }}</span>
+          <span class="island-total">R$ {{ totalLista | number:'1.2-2' }}</span>
+        </div>
+
+        <!-- Ações (Add, Câmera, Nuvem) -->
+        <div class="island-actions">
+          <button class="island-icon primary" (click)="abrirModal()" title="Adicionar Manual">
+            <span class="material-symbols-rounded">add</span>
+          </button>
+          
+          <!-- Botão de Câmera Nativa -->
+          <label class="island-icon primary camera-label" title="Ler Etiqueta" [class.loading]="isProcessandoImagem">
+            <input type="file" accept="image/*" capture="environment" (change)="processarImagem($event)" style="display: none;">
+            <span class="material-symbols-rounded">{{ isProcessandoImagem ? 'hourglass_empty' : 'photo_camera' }}</span>
+          </label>
+          
+          <button class="island-icon secondary" (click)="sincronizarNuvem()" [disabled]="isSincronizando">
+            <span class="material-symbols-rounded">{{ isSincronizando ? 'sync' : 'cloud_upload' }}</span>
+          </button>
+        </div>
+
+      </div>
     </div>
-    <!-- 🌟 Fim da Dynamic Island 🌟 -->
+    <!-- 🌟 Fim da Ilha Dinâmica 🌟 -->
 
-    <!-- 👇 A DIV CONTENT-AREA RESTAURADA 👇 -->
     <div class="content-area">
+      
+      <!-- 👇 Barra de Busca Minimalista 👇 -->
+      <div class="search-bar" *ngIf="itens.length > 0">
+        <span class="material-symbols-rounded">search</span>
+        <input type="text" [(ngModel)]="termoBusca" placeholder="Buscar na lista...">
+        <button *ngIf="termoBusca" (click)="termoBusca = ''" class="clear-search">✕</button>
+      </div>
+
       <p class="empty-state" *ngIf="itens.length === 0">
-        Sua lista está vazia. Adicione um produto manualmente ou use a câmera!
+        Sua lista está vazia. Adicione um produto manualmente ou escaneie!
       </p>
+
+      <!-- 👇 Atualizado para usar o itensFiltrados 👇 -->
+      <div class="itens-list" *ngIf="itensFiltrados.length > 0">
+        <div class="item-card" *ngFor="let item of itensFiltrados">
+          <!-- ... o interior do item-card continua exatamente o mesmo ... -->
 
       <div class="itens-list" *ngIf="itens.length > 0">
         <div class="item-card" *ngFor="let item of itens">
