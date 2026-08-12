@@ -47,7 +47,7 @@
 
     <div class="content-area">
       
-      <!-- 👇 Barra de Busca Minimalista 👇 -->
+      <!-- Barra de Busca Minimalista -->
       <div class="search-bar" *ngIf="itens.length > 0">
         <span class="material-symbols-rounded">search</span>
         <input type="text" [(ngModel)]="termoBusca" placeholder="Buscar na lista...">
@@ -58,13 +58,9 @@
         Sua lista está vazia. Adicione um produto manualmente ou escaneie!
       </p>
 
-      <!-- 👇 Atualizado para usar o itensFiltrados 👇 -->
+      <!-- Lista de Itens Única e Filtrada -->
       <div class="itens-list" *ngIf="itensFiltrados.length > 0">
         <div class="item-card" *ngFor="let item of itensFiltrados">
-          <!-- ... o interior do item-card continua exatamente o mesmo ... -->
-
-      <div class="itens-list" *ngIf="itens.length > 0">
-        <div class="item-card" *ngFor="let item of itens">
           <div class="item-info">
             <h4>{{ item.nome }}</h4>
             <span class="item-price">R$ {{ item.preco_unitario | number:'1.2-2' }} x {{ item.quantidade }}</span>
@@ -86,6 +82,7 @@
           </div>
         </div>
       </div>
+      
     </div>
   </main>
 </div>
@@ -162,8 +159,6 @@
       <button class="calc-btn col-span" (click)="addCalc('0')">0</button>
       <button class="calc-btn" (click)="addCalc('.')">.</button>
     </div>
-
-    <!-- 👇 NOVO BOTÃO DE INTEGRAÇÃO 👇 -->
     <button class="btn-primary" style="width: 100%; margin-top: 1.5rem; padding: 1rem; font-size: 1.1rem;" (click)="usarValorCalculadora()">
       ✓ Usar este valor
     </button>

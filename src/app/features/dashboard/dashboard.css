@@ -282,6 +282,7 @@
    ========================================= */
 .category-selector {
   display: flex;
+  flex-wrap: wrap; /* 👈 Adicione esta linha para consertar as quebras no celular */
   gap: 0.75rem;
   margin-top: 0.5rem;
 }

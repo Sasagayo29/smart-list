@@ -1,11 +1,9 @@
 <div class="layout-container">
-  <!-- Toolbar Lateral (Vira Bottom Nav no celular) -->
+  <!-- Toolbar Lateral -->
   <nav class="vertical-toolbar">
     <div class="brand"><h3>SL</h3></div>
     <ul class="nav-links">
       <li class="active">Minhas Listas</li>
-      
-      <!-- 👇 Adicionamos os eventos de clique aqui 👇 -->
       <li (click)="abrirConfiguracoes()">Configurações</li>
       <li (click)="sair()" style="color: var(--danger); font-weight: 600;">Sair</li>
     </ul>
@@ -29,12 +27,10 @@
       </p>
 
       <div class="listas-grid" *ngIf="listas.length > 0">
-        <!-- Cartões Premium -->
         <div class="lista-card" *ngFor="let lista of listas" (click)="irParaLista(lista.id!)">
           
           <div class="card-header">
             <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <!-- 🌟 Ícone da Categoria 🌟 -->
               <span class="material-symbols-rounded cat-icon" [style.color]="getCategoriaDetalhes(lista.categoria).cor">
                 {{ getCategoriaDetalhes(lista.categoria).icone }}
               </span>
@@ -53,7 +49,6 @@
             </div>
           </div>
           
-          <!-- Barra de Progresso do Orçamento -->
           <div class="card-footer" *ngIf="lista.orcamento > 0">
             <div class="progress-info">
               <span>Progresso</span>
@@ -70,7 +65,22 @@
   </main>
 </div>
 
-<div class="form-group">
+<!-- Modal de Nova Lista RESTAURADO -->
+<div class="modal-overlay" *ngIf="isModalOpen">
+  <div class="modal-content">
+    <h3>Criar Nova Lista</h3>
+    
+    <div class="form-group">
+      <label>Nome da Lista</label>
+      <input type="text" [(ngModel)]="novaListaNome" placeholder="Ex: Compras do Mês" required>
+    </div>
+
+    <div class="form-group">
+      <label>Orçamento Limite (R$)</label>
+      <input type="number" [(ngModel)]="novaListaOrcamento" placeholder="Ex: 500.00">
+    </div>
+
+    <div class="form-group">
       <label>Categoria</label>
       <div class="category-selector">
         <button 
@@ -86,21 +96,12 @@
       </div>
     </div>
 
-<div class="form-group">
-      <label>Categoria</label>
-      <div class="category-selector">
-        <button 
-          *ngFor="let cat of categorias" 
-          type="button"
-          class="cat-btn" 
-          [class.active]="novaListaCategoria === cat.id"
-          [style.--cat-color]="cat.cor"
-          (click)="novaListaCategoria = cat.id"
-          [title]="cat.nome">
-          <span class="material-symbols-rounded">{{ cat.icone }}</span>
-        </button>
-      </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" (click)="fecharModal()">Cancelar</button>
+      <button class="btn-primary" (click)="salvarLista()" [disabled]="!novaListaNome">Criar Lista</button>
     </div>
+  </div>
+</div>
 
 <!-- Modal de Configurações -->
 <div class="modal-overlay" *ngIf="isConfigOpen">
@@ -111,16 +112,13 @@
       <label>Aparência do Aplicativo</label>
       <div class="theme-options">
         <button class="btn-secondary" [class.active]="temaEscolhido === 'sistema'" (click)="mudarTema('sistema')" style="display: flex; align-items: center; justify-content: center; gap: 0.25rem;">
-          <span class="material-symbols-rounded" style="font-size: 1.1rem;">smartphone</span>
-          Sistema
+          <span class="material-symbols-rounded" style="font-size: 1.1rem;">smartphone</span> Sistema
         </button>
         <button class="btn-secondary" [class.active]="temaEscolhido === 'claro'" (click)="mudarTema('claro')" style="display: flex; align-items: center; justify-content: center; gap: 0.25rem;">
-          <span class="material-symbols-rounded" style="font-size: 1.1rem;">light_mode</span>
-          Claro
+          <span class="material-symbols-rounded" style="font-size: 1.1rem;">light_mode</span> Claro
         </button>
         <button class="btn-secondary" [class.active]="temaEscolhido === 'escuro'" (click)="mudarTema('escuro')" style="display: flex; align-items: center; justify-content: center; gap: 0.25rem;">
-          <span class="material-symbols-rounded" style="font-size: 1.1rem;">dark_mode</span>
-          Escuro
+          <span class="material-symbols-rounded" style="font-size: 1.1rem;">dark_mode</span> Escuro
         </button>
       </div>
     </div>
