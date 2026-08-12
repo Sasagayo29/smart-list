@@ -1,168 +1,122 @@
-import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { ToastService } from '../../shared/components/toast'; // 👇 Importe o serviço
+import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LocalDbService } from '../../core/services/db/local-db';
-import { ListaCompra } from '../../core/models/compra.modal';
-import { Component, inject, OnInit, PLATFORM_ID, ChangeDetectorRef } from '@angular/core'; // 👈 Importação
-// 👇 Importe o serviço do Supabase
-import { SupabaseService } from '../../core/services/supabase/supabase'; 
-
-interface ListaViewModel extends ListaCompra {
-  gastoTotal: number;
-  progresso: number;
-  categoria?: string; // 👈 Adicione esta linha (a interrogação significa que é opcional nas listas antigas)
-}
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule], // 👈 FormsModule é vital para capturar o que você digita!
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css']
 })
 export class DashboardComponent implements OnInit {
-  private localDb = inject(LocalDbService);
   private router = inject(Router);
-  private platformId = inject(PLATFORM_ID);
-  private supabaseService = inject(SupabaseService); // 👇 Injete o serviço aqui
-  private toastService = inject(ToastService); // 👇 Injeção do Toast
-  private cdr = inject(ChangeDetectorRef); // 👈 Injeção
+  private localDb = inject(LocalDbService);
+  private cdr = inject(ChangeDetectorRef);
 
-  listas: ListaViewModel[] = [];
+  listas: any[] = [];
+  
+  // ==========================================
+  // CONTROLES DOS MODAIS
+  // ==========================================
   isModalOpen = false;
   novaListaNome = '';
   novaListaOrcamento: number | null = null;
-  // Novas variáveis
+  novaListaCategoria = 'mercado';
+
   isConfigOpen = false;
   temaEscolhido = 'sistema';
 
-  // Adicione estas variáveis logo abaixo da declaração das suas listas
+  // Categorias com cores e ícones premium
   categorias = [
-    { id: 'mercado', nome: 'Mercado', icone: 'shopping_cart', cor: '#10b981' }, // Verde
-    { id: 'shopping', nome: 'Shopping', icone: 'local_mall', cor: '#8b5cf6' }, // Roxo
-    { id: 'farmacia', nome: 'Farmácia', icone: 'vaccines', cor: '#ef4444' }, // Vermelho
-    { id: 'trabalho', nome: 'Trabalho', icone: 'work', cor: '#3b82f6' }, // Azul
-    { id: 'outros', nome: 'Outros', icone: 'category', cor: '#64748b' } // Cinza
+    { id: 'mercado', nome: 'Mercado', icone: 'shopping_cart', cor: '#3b82f6' },
+    { id: 'farmacia', nome: 'Farmácia', icone: 'medical_services', cor: '#ef4444' },
+    { id: 'construcao', nome: 'Construção', icone: 'handyman', cor: '#f59e0b' },
+    { id: 'outros', nome: 'Outros', icone: 'category', cor: '#64748b' }
   ];
-  novaListaCategoria = 'mercado'; // Categoria padrão
-
-  abrirConfiguracoes() {
-    // Lê o que está salvo para o botão acender corretamente
-    this.temaEscolhido = localStorage.getItem('smartlist-tema') || 'sistema';
-    this.isConfigOpen = true;
-  }
-
-  fecharConfiguracoes() {
-    this.isConfigOpen = false;
-  }
-
-  mudarTema(tema: string) {
-    this.temaEscolhido = tema;
-    
-    // Salva a escolha do usuário para sobreviver ao refresh da página
-    localStorage.setItem('smartlist-tema', tema);
-    
-    // Limpa as classes do body e aplica a nova
-    document.body.classList.remove('tema-claro', 'tema-escuro');
-    if (tema !== 'sistema') {
-      document.body.classList.add(`tema-${tema}`);
-    }
-
-    // Dispara a nova notificação elegante
-    this.toastService.mostrar(
-      tema === 'sistema' ? 'Tema automático ativado' : `Tema ${tema} ativado`
-    );
-  }
-
-  async sair() {
-    const confirmar = confirm('Tem certeza que deseja sair do aplicativo?');
-    if (confirmar) {
-      await this.supabaseService.supabase.auth.signOut();
-      this.toastService.mostrar('Sessão encerrada.'); // 👈 Usando Toast
-      this.router.navigate(['/auth']);
-    }
-  }
 
   async ngOnInit() {
-    // 👇 Bloqueia a execução no servidor do Vercel. Só roda no celular/navegador!
-    if (isPlatformBrowser(this.platformId)) {
-      await this.carregarListas();
-    }
+    await this.carregarListas();
   }
 
   async carregarListas() {
-    const listasBanco = await this.localDb.listas.toArray();
-    const listasProcessadas: ListaViewModel[] = [];
-
-    for (const lista of listasBanco) {
-      const itens = await this.localDb.itens.where('lista_id').equals(lista.id!).toArray();
-      
-      const gastoTotal = itens.reduce((acc, item) => {
-        return acc + (item.quantidade * (item.preco_unitario || 0));
-      }, 0);
-
-      let progresso = 0;
-      if (lista.orcamento && lista.orcamento > 0) {
-        progresso = (gastoTotal / lista.orcamento) * 100;
-        if (progresso > 100) progresso = 100; 
-      }
-
-      listasProcessadas.push({
-        ...lista,
-        gastoTotal,
-        progresso
-      });
-    }
-
-    this.listas = listasProcessadas.sort((a, b) => 
-      new Date(b.created_at!).getTime() - new Date(a.created_at!).getTime()
-    );
+    this.listas = await this.localDb.listas.toArray();
     
-    // 👈 Força o Dashboard a mostrar os valores da lista de primeira, sem precisar de F5
-    this.cdr.detectChanges(); 
+    // Calcula o progresso do orçamento de cada lista com base nos itens salvos offline
+    for (let lista of this.listas) {
+      const itens = await this.localDb.itens.where('lista_id').equals(lista.id).toArray();
+      lista.gastoTotal = itens.reduce((acc: number, item: any) => acc + (item.quantidade * item.preco_unitario), 0);
+      lista.progresso = lista.orcamento > 0 ? Math.min((lista.gastoTotal / lista.orcamento) * 100, 100) : 0;
+    }
+    
+    this.cdr.detectChanges(); // ⚡ Atualiza a tela instantaneamente
   }
 
+  getCategoriaDetalhes(categoriaId: string | undefined) {
+    if (!categoriaId) return this.categorias[3];
+    return this.categorias.find(c => c.id === categoriaId) || this.categorias[3];
+  }
+
+  irParaLista(id: string) {
+    this.router.navigate(['/lista', id]);
+  }
+
+  // ==========================================
+  // LÓGICA DE CRIAR NOVA LISTA
+  // ==========================================
   abrirModalNovaLista() {
     this.isModalOpen = true;
-  }
-
-  // Atualize a função de fechar modal para resetar a categoria
-  fecharModal() {
-    this.isModalOpen = false;
     this.novaListaNome = '';
     this.novaListaOrcamento = null;
     this.novaListaCategoria = 'mercado';
+    this.cdr.detectChanges(); 
   }
 
-  // Na função salvarLista, adicione a categoria ao objeto:
+  fecharModal() {
+    this.isModalOpen = false;
+    this.cdr.detectChanges(); 
+  }
+
   async salvarLista() {
     if (!this.novaListaNome) return;
 
-    const novaLista: any = { // Usamos any temporariamente caso sua interface ListaCompra não tenha 'categoria'
-      id: this.localDb.generateUUID(),
+    // Removemos a obrigatoriedade do user_id real para testes offline fluírem
+    const novaLista = {
+      id: this.localDb.generateUUID(), 
       nome: this.novaListaNome,
       orcamento: this.novaListaOrcamento || 0,
-      categoria: this.novaListaCategoria, // 👈 Nova propriedade
+      categoria: this.novaListaCategoria,
+      finalizada: false,
       created_at: new Date().toISOString(),
-      user_id: 'local', 
-      finalizada: false 
+      user_id: null 
     };
 
     await this.localDb.listas.add(novaLista);
     this.fecharModal();
-    await this.carregarListas(); 
-  }
-  
-  // Adicionamos o " | undefined" para aceitar listas antigas que não têm categoria
-  getCategoriaDetalhes(categoriaId: string | undefined) {
-    if (!categoriaId) {
-      return this.categorias[4]; // Retorna a categoria 'Outros' (ícone cinza) como padrão
-    }
-    return this.categorias.find(c => c.id === categoriaId) || this.categorias[4];
+    await this.carregarListas();
   }
 
-  irParaLista(id: string) {
-    this.router.navigate(['/lista-itens', id]); 
+  // ==========================================
+  // LÓGICA DE CONFIGURAÇÕES
+  // ==========================================
+  abrirConfiguracoes() {
+    this.isConfigOpen = true;
+    this.cdr.detectChanges();
+  }
+
+  fecharConfiguracoes() {
+    this.isConfigOpen = false;
+    this.cdr.detectChanges();
+  }
+
+  mudarTema(tema: string) {
+    this.temaEscolhido = tema;
+    // Aqui você conectará com a lógica do body (ex: document.body.classList.add('dark-theme'))
+  }
+
+  sair() {
+    alert('Função de Logout será conectada em breve!');
   }
 }

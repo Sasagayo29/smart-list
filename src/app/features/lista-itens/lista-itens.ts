@@ -66,12 +66,25 @@ export class ListaItensComponent implements OnInit {
     this.router.navigate(['/dashboard']);
   }
 
-  // 👇 Getter inteligente para a busca em tempo real
+  // 👇 Busca Inteligente: Ignora acentos e case sensitive
   get itensFiltrados() {
     if (!this.termoBusca) return this.itens;
-    return this.itens.filter(item => 
-      item.nome.toLowerCase().includes(this.termoBusca.toLowerCase())
-    );
+    
+    // Normaliza o termo de busca (tira acentos e deixa minúsculo)
+    const termoLimpo = this.termoBusca
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+
+    return this.itens.filter(item => {
+      // Normaliza o nome do produto salvo no banco
+      const nomeLimpo = item.nome
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+        
+      return nomeLimpo.includes(termoLimpo);
+    });
   }
 
   // ==========================================
