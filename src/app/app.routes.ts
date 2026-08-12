@@ -15,7 +15,7 @@ export const routes: Routes = [
   { 
     path: 'dashboard', 
     component: DashboardComponent, 
-    canActivate: [authGuard] // 👈 Trava ativada
+    //canActivate: [authGuard] // 👈 Trava ativada
   },
   { 
     path: 'lista-itens/:id', 
