@@ -75,4 +75,19 @@ export class SupabaseService {
       console.warn('Ping offline (Supabase inacessível no momento).');
     }
   }
+
+  // Adicione esta nova função para sincronizar a lista principal
+  async sincronizarListas(listasLocais: any[]) {
+    try {
+      const { data, error } = await this.supabase
+        .from('listas')
+        .upsert(listasLocais);
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Erro ao sincronizar listas com Supabase:', error);
+      throw error;
+    }
+  }
 }

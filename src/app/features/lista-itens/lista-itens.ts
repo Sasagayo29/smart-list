@@ -138,31 +138,41 @@ export class ListaItensComponent implements OnInit {
     this.cdr.detectChanges(); 
     
     try {
+      // 1️⃣ PRIMEIRO: Sincroniza a Lista (Pai)
+      if (this.listaAtual) {
+        const listaParaNuvem = {
+          id: this.listaAtual.id,
+          nome: this.listaAtual.nome,
+          orcamento: this.listaAtual.orcamento || 0
+          // Nota: Não estamos mandando o user_id para não conflitar com a autenticação offline
+        };
+        await this.supabaseService.sincronizarListas([listaParaNuvem]);
+      }
+
+      // 2️⃣ SEGUNDO: Sincroniza os Itens (Filhos)
       const itensLocais = await this.localDb.itens.toArray();
       if (itensLocais.length === 0) {
-        alert('A lista está vazia. Não há o que sincronizar.');
+        alert('A Lista foi salva na nuvem, mas ainda não há produtos nela.');
         this.isSincronizando = false;
         return;
       }
       
-      // 👇 O FILTRO DE DADOS 👇
       const itensParaNuvem = itensLocais.map(item => {
         return {
           id: item.id,
-          lista_id: item.lista_id, // 👈 A CORREÇÃO ESTÁ AQUI: Deve ser exatamente "lista_id" com underline
+          lista_id: item.lista_id, 
           nome: item.nome,
           quantidade: item.quantidade,
           preco_unitario: item.preco_unitario
         };
       });
       
-      // Enviamos apenas o objeto filtrado
       await this.supabaseService.sincronizarItens(itensParaNuvem);
       alert('Sincronização concluída com sucesso! ☁️');
       
     } catch (error: any) {
       console.error('Erro detalhado:', error);
-      alert(`Falha na nuvem: ${error.message || 'Erro de permissão no Supabase.'}`);
+      alert(`Falha na nuvem: ${error.message || 'Erro no Supabase.'}`);
     } finally {
       this.isSincronizando = false;
       this.cdr.detectChanges(); 
