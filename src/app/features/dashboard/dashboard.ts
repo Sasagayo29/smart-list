@@ -82,15 +82,15 @@ export class DashboardComponent implements OnInit {
   async salvarLista() {
     if (!this.novaListaNome) return;
 
-    // Removemos a obrigatoriedade do user_id real para testes offline fluírem
-    const novaLista = {
+    // 👇 Adicionamos o 'any' e trocamos o null por 'local'
+    const novaLista: any = {
       id: this.localDb.generateUUID(), 
       nome: this.novaListaNome,
       orcamento: this.novaListaOrcamento || 0,
       categoria: this.novaListaCategoria,
       finalizada: false,
       created_at: new Date().toISOString(),
-      user_id: null 
+      user_id: 'local' // 👈 O TypeScript agora aceita sem reclamar!
     };
 
     await this.localDb.listas.add(novaLista);
