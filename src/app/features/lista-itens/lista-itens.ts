@@ -173,17 +173,28 @@ export class ListaItensComponent implements OnInit {
     this.cdr.detectChanges(); 
     
     try {
-      // 1. Sincroniza a Lista (Pai)
+      // 👇 1. Descobre quem é o usuário real logado na sessão do Supabase
+      const { data: authData } = await this.supabaseService.supabaseClient.auth.getSession();
+      const idUsuarioReal = authData.session?.user?.id;
+
+      if (!idUsuarioReal) {
+        alert('Você precisa estar logado na sua conta para sincronizar com a nuvem!');
+        this.isSincronizando = false;
+        return;
+      }
+
+      // 👇 2. Sincroniza a Lista substituindo o 'local' pelo ID verdadeiro
       if (this.listaAtual) {
         const listaParaNuvem = {
           id: this.listaAtual.id,
           nome: this.listaAtual.nome,
-          orcamento: this.listaAtual.orcamento || 0
+          orcamento: this.listaAtual.orcamento || 0,
+          user_id: idUsuarioReal // ✨ A mágica acontece aqui!
         };
         await this.supabaseService.sincronizarListas([listaParaNuvem]);
       }
 
-      // 2. Sincroniza os Itens (Filhos)
+      // 3. Sincroniza os Itens (Filhos)
       const itensLocais = await this.localDb.itens.toArray();
       if (itensLocais.length === 0) {
         alert('A Lista foi salva na nuvem, mas ainda não há produtos nela.');
