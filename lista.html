@@ -89,6 +89,19 @@
       </div>
     </div>
 
+    <!-- ... Botão da Câmera (já existente) ... -->
+<label class="island-icon primary camera-label" title="Ler Etiqueta">
+  <input type="file" accept="image/*" capture="environment" id="input-camera" style="display: none;">
+  <span class="material-symbols-rounded">photo_camera</span>
+</label>
+
+<!-- 👇 NOVO: Botão de Importar TXT/Excel 👇 -->
+<label class="island-icon secondary" title="Importar Planilha ou Texto">
+  <input type="file" accept=".txt, .csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" id="input-importar" style="display: none;">
+  <span class="material-symbols-rounded">upload_file</span>
+</label>
+
+<!-- ... Botão de Sincronizar Nuvem (já existente) ... -->
     <script type="module" src="/src/lista.js"></script>
   </body>
 </html>

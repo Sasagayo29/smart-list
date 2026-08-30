@@ -1,4 +1,5 @@
 import { db, generateUUID } from './db.js';
+import * as XLSX from 'xlsx';
 
 // 1. Pega o ID da lista que está na URL (ex: lista.html?id=123)
 const urlParams = new URLSearchParams(window.location.search);
@@ -135,6 +136,89 @@ inputBusca.addEventListener('input', async (e) => {
   
   renderizarItens(itensFiltrados);
 });
+
+// ==========================================
+// MÓDULO DE IMPORTAÇÃO (Excel e TXT)
+// ==========================================
+const inputImportar = document.getElementById('input-importar');
+
+inputImportar.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const extensao = file.name.split('.').pop().toLowerCase();
+
+  try {
+    if (extensao === 'txt') {
+      const texto = await file.text();
+      await processarTXT(texto);
+    } else if (extensao === 'xlsx' || extensao === 'csv') {
+      const buffer = await file.arrayBuffer();
+      const workbook = XLSX.read(buffer);
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const dados = XLSX.utils.sheet_to_json(worksheet);
+      await processarExcel(dados);
+    }
+  } catch (error) {
+    console.error("Erro na importação:", error);
+    alert('Erro ao processar o arquivo. Verifique se o formato está correto.');
+  }
+  
+  inputImportar.value = ''; // Limpa o input para permitir importar o mesmo arquivo de novo
+});
+
+// Leitor de Texto Simples
+async function processarTXT(texto) {
+  const linhas = texto.split('\n');
+  
+  for (const linha of linhas) {
+    if (linha.trim() === '') continue;
+    
+    // Regra: O TXT deve ser separado por vírgulas. Ex: Arroz, 2, 25.50
+    const partes = linha.split(',');
+    const nome = partes[0].trim();
+    const qtd = partes[1] ? parseInt(partes[1]) : 1;
+    const preco = partes[2] ? parseFloat(partes[2]) : 0;
+
+    await db.itens.add({
+      id: generateUUID(),
+      lista_id: listaId,
+      nome: nome,
+      quantidade: qtd,
+      preco_unitario: preco,
+      comprado: false,
+      user_id: 'local'
+    });
+  }
+  
+  carregarDados();
+  alert('Lista de texto importada com sucesso!');
+}
+
+// Leitor de Excel Automático
+async function processarExcel(dados) {
+  for (const linha of dados) {
+    // O sistema é inteligente: ele procura colunas chamadas Nome, Produto, Quantidade, Qtd...
+    const nome = linha.Nome || linha.nome || linha.Produto || linha.produto;
+    if (!nome) continue; // Pula a linha se não tiver nome do produto
+    
+    const qtd = linha.Quantidade || linha.quantidade || linha.Qtd || 1;
+    const preco = linha.Preco || linha.preco || linha.Valor || linha.valor || 0;
+
+    await db.itens.add({
+      id: generateUUID(),
+      lista_id: listaId,
+      nome: nome.toString(),
+      quantidade: parseInt(qtd),
+      preco_unitario: parseFloat(preco),
+      comprado: false,
+      user_id: 'local'
+    });
+  }
+  
+  carregarDados();
+  alert('Planilha importada com sucesso!');
+}
 
 // Inicia
 carregarDados();
