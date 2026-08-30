@@ -20,6 +20,29 @@ const emptyState = document.getElementById('empty-state');
 const btnBaixarNuvem = document.getElementById('btn-baixar-nuvem');
 const btnConfig = document.getElementById('btn-config'); 
 
+// ==========================================
+// CONTROLE DE CATEGORIAS
+// ==========================================
+const categoriasConfig = [
+  { id: 'mercado', nome: 'Mercado', icone: 'shopping_cart', cor: '#3b82f6' },
+  { id: 'farmacia', nome: 'Farmácia', icone: 'medical_services', cor: '#ef4444' },
+  { id: 'construcao', nome: 'Construção', icone: 'handyman', cor: '#f59e0b' },
+  { id: 'outros', nome: 'Outros', icone: 'category', cor: '#64748b' }
+];
+
+let categoriaSelecionada = 'mercado';
+
+// Lógica de selecionar a categoria no modal
+document.querySelectorAll('.cat-option').forEach(el => {
+  el.addEventListener('click', (e) => {
+    // Remove a classe 'selected' de todos
+    document.querySelectorAll('.cat-option').forEach(opt => opt.classList.remove('selected'));
+    // Adiciona apenas no que foi clicado
+    e.currentTarget.classList.add('selected');
+    categoriaSelecionada = e.currentTarget.getAttribute('data-cat');
+  });
+});
+
 // Controle do Modal
 btnNovaLista.addEventListener('click', () => {
   document.getElementById('input-nome-lista').value = '';
@@ -41,7 +64,7 @@ btnSalvarLista.addEventListener('click', async () => {
   const novaLista = {
     id: generateUUID(),
     nome: nome,
-    categoria: 'mercado', 
+    categoria: categoriaSelecionada, // 👈 Usa a categoria clicada!
     orcamento: orcamento,
     created_at: new Date().toISOString(),
     user_id: 'local' 
@@ -64,18 +87,45 @@ async function carregarListas() {
   
   emptyState.style.display = 'none';
 
-  listas.forEach(lista => {
+  for (const lista of listas) {
     const dataFormatada = new Date(lista.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
     
+    // Busca as configurações da categoria
+    const catDetalhes = categoriasConfig.find(c => c.id === lista.categoria) || categoriasConfig[3];
+    
+    // 🧮 CÁLCULO DE PROGRESSO (Busca os itens desta lista e soma)
+    const itensDaLista = await db.itens.where('lista_id').equals(lista.id).toArray();
+    const gastoTotal = itensDaLista.reduce((acc, item) => acc + (item.quantidade * item.preco_unitario), 0);
+    
+    // Calcula a porcentagem e define a cor (fica vermelho se passar de 90%)
+    let porcentagem = lista.orcamento > 0 ? (gastoTotal / lista.orcamento) * 100 : 0;
+    if (porcentagem > 100) porcentagem = 100;
+    const corBarra = porcentagem > 90 ? 'var(--danger)' : catDetalhes.cor;
+
+    // Monta o Cartão Premium
     const card = document.createElement('div');
     card.className = 'lista-card';
     card.innerHTML = `
-      <div class="card-header">
-        <h3>${lista.nome}</h3>
-        <span style="color: var(--text-muted); font-size: 0.85rem;">${dataFormatada}</span>
+      <div class="card-header" style="align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 0;">
+        <div style="display: flex; align-items: center;">
+          <div class="cat-icon-card" style="background-color: ${catDetalhes.cor};">
+            <span class="material-symbols-rounded">${catDetalhes.icone}</span>
+          </div>
+          <div>
+            <h3 style="margin: 0; font-size: 1.15rem;">${lista.nome}</h3>
+            <span style="color: var(--text-muted); font-size: 0.8rem;">${dataFormatada}</span>
+          </div>
+        </div>
       </div>
-      <div>
-        <p style="color: var(--text-muted); font-size: 0.9rem;">Limite: R$ ${lista.orcamento.toFixed(2)}</p>
+      
+      <div class="progress-container">
+        <div class="progress-labels">
+          <span>R$ ${gastoTotal.toFixed(2)}</span>
+          <span>R$ ${lista.orcamento.toFixed(2)}</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-fill" style="width: ${porcentagem}%; background-color: ${corBarra};"></div>
+        </div>
       </div>
     `;
 
@@ -84,7 +134,7 @@ async function carregarListas() {
     });
 
     listasContainer.appendChild(card);
-  });
+  }
 }
 
 // ==========================================
