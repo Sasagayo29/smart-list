@@ -1,5 +1,5 @@
 import { db, generateUUID } from './db.js';
-import { supabase } from './supabase.js'; // 👈 NOVA LINHA
+import { supabase } from './supabase.js'; 
 
 // Seleciona os elementos da tela
 const btnNovaLista = document.getElementById('btn-nova-lista');
@@ -8,6 +8,8 @@ const btnFecharModal = document.getElementById('btn-fechar-modal');
 const btnSalvarLista = document.getElementById('btn-salvar-lista');
 const listasContainer = document.getElementById('listas-container');
 const emptyState = document.getElementById('empty-state');
+const btnBaixarNuvem = document.getElementById('btn-baixar-nuvem');
+const btnConfig = document.getElementById('btn-config'); 
 
 // Controle do Modal
 btnNovaLista.addEventListener('click', () => {
@@ -30,25 +32,21 @@ btnSalvarLista.addEventListener('click', async () => {
   const novaLista = {
     id: generateUUID(),
     nome: nome,
-    categoria: 'mercado', // Fixo por enquanto, depois adicionaremos os ícones de volta
+    categoria: 'mercado', 
     orcamento: orcamento,
     created_at: new Date().toISOString(),
-    user_id: 'local' // Como combinado, listas locais recebem 'local'
+    user_id: 'local' 
   };
 
-  // Salva no IndexedDB super rápido
   await db.listas.add(novaLista);
   modalLista.style.display = 'none';
-  
-  // Atualiza a tela
   carregarListas();
 });
 
 // Carregar e exibir as listas
 async function carregarListas() {
   const listas = await db.listas.toArray();
-  
-  listasContainer.innerHTML = ''; // Limpa a tela
+  listasContainer.innerHTML = ''; 
 
   if (listas.length === 0) {
     emptyState.style.display = 'block';
@@ -60,7 +58,6 @@ async function carregarListas() {
   listas.forEach(lista => {
     const dataFormatada = new Date(lista.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
     
-    // Cria o cartão dinamicamente
     const card = document.createElement('div');
     card.className = 'lista-card';
     card.innerHTML = `
@@ -73,7 +70,6 @@ async function carregarListas() {
       </div>
     `;
 
-    // Ao clicar no cartão, vai para a página de itens
     card.addEventListener('click', () => {
       window.location.href = `/lista.html?id=${lista.id}`;
     });
@@ -85,47 +81,16 @@ async function carregarListas() {
 // ==========================================
 // GERENCIAMENTO DE SESSÃO E LOGOUT
 // ==========================================
-const btnConfig = document.getElementById('btn-config'); // Usaremos o botão de configurações temporariamente para o Logout
-
-// Verifica se tem alguém logado para mudar o texto do botão
 async function verificarUsuario() {
   const { data: { session } } = await supabase.auth.getSession();
   
   if (session) {
     btnConfig.innerHTML = `<span style="color: var(--danger); font-weight: bold;">Sair da Conta</span>`;
-    
-    // Conecta a função real de Logout
-    btnConfig.addEventListener('click', async () => {
-      if(confirm('Tem certeza que deseja sair?')) {
-        await supabase.auth.signOut();
-        window.location.href = '/login.html';
-      }
-    });
-  } else {
-    // Se não tiver logado, o botão leva para o login
-    btnConfig.innerHTML = `<span style="color: var(--primary-color); font-weight: bold;">Fazer Login</span>`;
-    btnConfig.addEventListener('click', () => {
-      window.location.href = '/login.html';
-    });
-  }
-}
-
-verificarUsuario();
-
-const btnBaixarNuvem = document.getElementById('btn-baixar-nuvem');
-
-// Atualiza a verificação de usuário para mostrar o botão de download
-async function verificarUsuario() {
-  const { data: { session } } = await supabase.auth.getSession();
-  
-  if (session) {
-    btnConfig.innerHTML = `<span style="color: var(--danger); font-weight: bold;">Sair da Conta</span>`;
-    btnBaixarNuvem.style.display = 'block'; // Mostra o botão se estiver logado
+    btnBaixarNuvem.style.display = 'block'; 
     
     btnConfig.addEventListener('click', async () => {
       if(confirm('Tem certeza que deseja sair?')) {
         await supabase.auth.signOut();
-        // Limpa o banco local por segurança ao sair
         await db.listas.clear();
         await db.itens.clear();
         window.location.href = '/login.html';
@@ -149,12 +114,9 @@ btnBaixarNuvem.addEventListener('click', async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return alert('Você precisa estar logado!');
 
-    // Anima o ícone
     icone.style.animation = 'spin 1s linear infinite';
-
     const userId = session.user.id;
 
-    // 1. Puxa as listas do usuário
     const { data: listasNuvem, error: errorListas } = await supabase
       .from('listas')
       .select('*')
@@ -162,7 +124,6 @@ btnBaixarNuvem.addEventListener('click', async () => {
       
     if (errorListas) throw errorListas;
 
-    // 2. Puxa os itens do usuário
     const { data: itensNuvem, error: errorItens } = await supabase
       .from('itens')
       .select('*')
@@ -170,7 +131,6 @@ btnBaixarNuvem.addEventListener('click', async () => {
 
     if (errorItens) throw errorItens;
 
-    // 3. Limpa o banco local e insere os dados da nuvem (Garante que fique espelhado)
     await db.listas.clear();
     await db.itens.clear();
 
@@ -182,7 +142,6 @@ btnBaixarNuvem.addEventListener('click', async () => {
       await db.itens.bulkAdd(itensNuvem);
     }
 
-    // Recarrega a tela
     carregarListas();
     alert('Listas atualizadas com sucesso! ☁️⬇️');
 
@@ -194,5 +153,5 @@ btnBaixarNuvem.addEventListener('click', async () => {
   }
 });
 
-// Inicializa carregando as listas ao abrir o app
+// Inicializa
 carregarListas();

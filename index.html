@@ -25,30 +25,23 @@
             <h2>Dashboard</h2>
             <p class="subtitle">Gerencie suas compras e orçamentos</p>
           </div>
-          <div class="header-actions">
+          <!-- 👇 Botões unificados corretamente aqui 👇 -->
+          <div class="header-actions" style="display: flex; gap: 1rem;">
+            <button class="btn-cancel" id="btn-baixar-nuvem" title="Puxar dados da nuvem" style="padding: 0.75rem; display: none;">
+              <span class="material-symbols-rounded">cloud_download</span>
+            </button>
             <button class="btn-primary" id="btn-nova-lista">+ Nova Lista</button>
           </div>
         </header>
 
         <div class="content-area">
-          <!-- Onde as listas vão aparecer -->
           <div id="listas-container" class="listas-grid"></div>
-          
           <p class="empty-state" id="empty-state" style="display: none;">
             Nenhuma lista encontrada. Crie sua primeira lista de compras!
           </p>
         </div>
       </main>
     </div>
-
-    <div class="header-actions" style="display: flex; gap: 1rem;">
-      <!-- NOVO BOTÃO DE BAIXAR DA NUVEM -->
-    <button class="btn-cancel" id="btn-baixar-nuvem" title="Puxar dados da nuvem" style="padding: 0.75rem; display: none;">
-      <span class="material-symbols-rounded">cloud_download</span>
-    </button>
-  
-  <button class="btn-primary" id="btn-nova-lista">+ Nova Lista</button>
-  </div>
 
     <!-- Modal de Nova Lista -->
     <div class="modal-overlay" id="modal-lista" style="display: none;">
@@ -72,7 +65,6 @@
       </div>
     </div>
 
-    <!-- O Vite injeta o JS por aqui -->
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
