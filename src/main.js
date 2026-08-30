@@ -1,5 +1,14 @@
 import { db, generateUUID } from './db.js';
-import { supabase } from './supabase.js'; 
+import { supabase } from './supabase.js';
+
+// Registra o Service Worker para tornar o app instalável (PWA)
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => console.log('PWA: Service Worker registrado com sucesso!', reg.scope))
+      .catch(err => console.error('PWA: Erro ao registrar Service Worker:', err));
+  });
+}
 
 // Seleciona os elementos da tela
 const btnNovaLista = document.getElementById('btn-nova-lista');
