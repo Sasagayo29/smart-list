@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart List - Criar Conta</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body style="display: flex; justify-content: center; align-items: center; height: 100vh; background-color: var(--secondary-color);">
+    
+    <div class="modal-content" style="box-shadow: var(--shadow-lg);">
+      <h2 style="text-align: center; color: var(--primary-color); margin-bottom: 0.5rem;">Criar Conta</h2>
+      <p style="text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">Junte-se ao Smart List</p>
+      
+      <div class="form-group">
+        <label>E-mail</label>
+        <input type="email" id="input-email-cad" placeholder="seu@email.com" required>
+      </div>
+      
+      <div class="form-group">
+        <label>Senha</label>
+        <input type="password" id="input-senha-cad" placeholder="Crie uma senha segura" required>
+      </div>
+
+      <div class="form-group">
+        <label>Confirmar Senha</label>
+        <input type="password" id="input-senha-conf" placeholder="Repita a senha" required>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem;">
+        <button class="btn-primary" id="btn-cadastrar-novo" style="width: 100%;">Criar Minha Conta</button>
+        <button class="btn-cancel" id="btn-voltar-login" style="width: 100%; border: none;">Já tenho conta (Entrar)</button>
+      </div>
+      
+      <p id="msg-erro-cad" style="color: var(--danger); text-align: center; margin-top: 1rem; font-size: 0.9rem; display: none;"></p>
+    </div>
+
+    <script type="module" src="/src/cadastro.js"></script>
+  </body>
+</html>

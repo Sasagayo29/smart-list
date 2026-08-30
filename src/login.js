@@ -36,18 +36,10 @@ btnEntrar.addEventListener('click', async () => {
   }
 });
 
-// Criar Conta
-btnCadastrar.addEventListener('click', async () => {
-  const email = inputEmail.value;
-  const password = inputSenha.value;
-  
-  if (!email || !password) return mostrarErro('Preencha todos os campos!');
-  
-  const { error } = await supabase.auth.signUp({ email, password });
-  
-  if (error) {
-    mostrarErro('Erro ao criar conta: ' + error.message);
-  } else {
-    alert('Conta criada com sucesso! Você já pode entrar.');
-  }
-});
+// Substitua o evento do btnCadastrar por este:
+const btnIrCadastro = document.getElementById('btn-ir-cadastro');
+if (btnIrCadastro) {
+  btnIrCadastro.addEventListener('click', () => {
+    window.location.href = '/cadastro.html';
+  });
+}
