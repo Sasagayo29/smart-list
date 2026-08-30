@@ -1,60 +1,85 @@
-import './style.css'
-import heroImg from './assets/hero.png'
-import javascriptLogo from './assets/javascript.svg'
-import viteLogo from './assets/vite.svg'
-import { setupCounter } from './counter.js'
+import { db, generateUUID } from './db.js';
 
-document.querySelector('#app').innerHTML = `
-<section id="center">
-  <div class="hero">
-    <img src="${heroImg}" class="base" width="170" height="179">
-    <img src="${javascriptLogo}" class="framework" alt="JavaScript logo"/>
-    <img src="${viteLogo}" class="vite" alt="Vite logo" />
-  </div>
-  <div>
-    <h1>Get started</h1>
-    <p>Edit <code>src/main.js</code> and save to test <code>HMR</code></p>
-  </div>
-  <button id="counter" type="button" class="counter"></button>
-</section>
+// Seleciona os elementos da tela
+const btnNovaLista = document.getElementById('btn-nova-lista');
+const modalLista = document.getElementById('modal-lista');
+const btnFecharModal = document.getElementById('btn-fechar-modal');
+const btnSalvarLista = document.getElementById('btn-salvar-lista');
+const listasContainer = document.getElementById('listas-container');
+const emptyState = document.getElementById('empty-state');
 
-<div class="ticks"></div>
+// Controle do Modal
+btnNovaLista.addEventListener('click', () => {
+  document.getElementById('input-nome-lista').value = '';
+  document.getElementById('input-orcamento-lista').value = '';
+  modalLista.style.display = 'flex';
+});
 
-<section id="next-steps">
-  <div id="docs">
-    <svg class="icon" role="presentation" aria-hidden="true"><use href="/icons.svg#documentation-icon"></use></svg>
-    <h2>Documentation</h2>
-    <p>Your questions, answered</p>
-    <ul>
-      <li>
-        <a href="https://vite.dev/" target="_blank">
-          <img class="logo" src="${viteLogo}" alt="" />
-          Explore Vite
-        </a>
-      </li>
-      <li>
-        <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">
-          <img class="button-icon" src="${javascriptLogo}" alt="">
-          Learn more
-        </a>
-      </li>
-    </ul>
-  </div>
-  <div id="social">
-    <svg class="icon" role="presentation" aria-hidden="true"><use href="/icons.svg#social-icon"></use></svg>
-    <h2>Connect with us</h2>
-    <p>Join the Vite community</p>
-    <ul>
-      <li><a href="https://github.com/vitejs/vite" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#github-icon"></use></svg>GitHub</a></li>
-      <li><a href="https://chat.vite.dev/" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#discord-icon"></use></svg>Discord</a></li>
-      <li><a href="https://x.com/vite_js" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#x-icon"></use></svg>X.com</a></li>
-      <li><a href="https://bsky.app/profile/vite.dev" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#bluesky-icon"></use></svg>Bluesky</a></li>
-    </ul>
-  </div>
-</section>
+btnFecharModal.addEventListener('click', () => {
+  modalLista.style.display = 'none';
+});
 
-<div class="ticks"></div>
-<section id="spacer"></section>
-`
+// Criar Nova Lista
+btnSalvarLista.addEventListener('click', async () => {
+  const nome = document.getElementById('input-nome-lista').value;
+  const orcamento = parseFloat(document.getElementById('input-orcamento-lista').value) || 0;
 
-setupCounter(document.querySelector('#counter'))
+  if (!nome) return alert('Dê um nome para a sua lista!');
+
+  const novaLista = {
+    id: generateUUID(),
+    nome: nome,
+    categoria: 'mercado', // Fixo por enquanto, depois adicionaremos os ícones de volta
+    orcamento: orcamento,
+    created_at: new Date().toISOString(),
+    user_id: 'local' // Como combinado, listas locais recebem 'local'
+  };
+
+  // Salva no IndexedDB super rápido
+  await db.listas.add(novaLista);
+  modalLista.style.display = 'none';
+  
+  // Atualiza a tela
+  carregarListas();
+});
+
+// Carregar e exibir as listas
+async function carregarListas() {
+  const listas = await db.listas.toArray();
+  
+  listasContainer.innerHTML = ''; // Limpa a tela
+
+  if (listas.length === 0) {
+    emptyState.style.display = 'block';
+    return;
+  }
+  
+  emptyState.style.display = 'none';
+
+  listas.forEach(lista => {
+    const dataFormatada = new Date(lista.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+    
+    // Cria o cartão dinamicamente
+    const card = document.createElement('div');
+    card.className = 'lista-card';
+    card.innerHTML = `
+      <div class="card-header">
+        <h3>${lista.nome}</h3>
+        <span style="color: var(--text-muted); font-size: 0.85rem;">${dataFormatada}</span>
+      </div>
+      <div>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">Limite: R$ ${lista.orcamento.toFixed(2)}</p>
+      </div>
+    `;
+
+    // Ao clicar no cartão, vai para a página de itens
+    card.addEventListener('click', () => {
+      window.location.href = `/lista.html?id=${lista.id}`;
+    });
+
+    listasContainer.appendChild(card);
+  });
+}
+
+// Inicializa carregando as listas ao abrir o app
+carregarListas();

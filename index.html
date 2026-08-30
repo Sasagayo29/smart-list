@@ -1,13 +1,69 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>smart-list</title>
+    <title>Smart List - Dashboard</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
-    <div id="app"></div>
+    <div class="layout-container">
+      <!-- Toolbar -->
+      <nav class="vertical-toolbar">
+        <div class="brand"><h3>SL</h3></div>
+        <ul class="nav-links">
+          <li class="active">Minhas Listas</li>
+          <li id="btn-config">Configurações</li>
+        </ul>
+        <div class="spacer"></div>
+      </nav>
+
+      <main class="main-content">
+        <header class="page-header">
+          <div class="header-title">
+            <h2>Dashboard</h2>
+            <p class="subtitle">Gerencie suas compras e orçamentos</p>
+          </div>
+          <div class="header-actions">
+            <button class="btn-primary" id="btn-nova-lista">+ Nova Lista</button>
+          </div>
+        </header>
+
+        <div class="content-area">
+          <!-- Onde as listas vão aparecer -->
+          <div id="listas-container" class="listas-grid"></div>
+          
+          <p class="empty-state" id="empty-state" style="display: none;">
+            Nenhuma lista encontrada. Crie sua primeira lista de compras!
+          </p>
+        </div>
+      </main>
+    </div>
+
+    <!-- Modal de Nova Lista -->
+    <div class="modal-overlay" id="modal-lista" style="display: none;">
+      <div class="modal-content">
+        <h3>Criar Nova Lista</h3>
+        
+        <div class="form-group">
+          <label>Nome da Lista</label>
+          <input type="text" id="input-nome-lista" placeholder="Ex: Compras do Mês" required>
+        </div>
+
+        <div class="form-group">
+          <label>Orçamento Limite (R$)</label>
+          <input type="number" id="input-orcamento-lista" placeholder="Ex: 500.00">
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn-cancel" id="btn-fechar-modal">Cancelar</button>
+          <button class="btn-primary" id="btn-salvar-lista">Criar Lista</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- O Vite injeta o JS por aqui -->
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
