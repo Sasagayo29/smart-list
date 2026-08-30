@@ -26,3 +26,5 @@
 .item-subtotal { font-size: 1.1rem; font-weight: 600; background-color: var(--secondary-color); padding: 0.5rem 1rem; border-radius: var(--radius-md); }
 .btn-icon { background: transparent; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; transition: var(--transition); }
 .btn-icon:hover { background-color: var(--secondary-color); }
+
+@keyframes spin { 100% { transform: rotate(360deg); } }

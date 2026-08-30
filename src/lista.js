@@ -1,4 +1,5 @@
 import { db, generateUUID } from './db.js';
+import { supabase } from './supabase.js'; // 👈 NOVA LINHA
 import * as XLSX from 'xlsx';
 
 // 1. Pega o ID da lista que está na URL (ex: lista.html?id=123)
@@ -135,6 +136,75 @@ inputBusca.addEventListener('input', async (e) => {
   });
   
   renderizarItens(itensFiltrados);
+});
+
+// ==========================================
+// SINCRONIZAÇÃO COM A NUVEM
+// ==========================================
+const btnSincronizar = document.getElementById('btn-sincronizar');
+
+btnSincronizar.addEventListener('click', async () => {
+  const iconeSync = btnSincronizar.querySelector('span');
+  
+  try {
+    // 1. Pega o usuário logado
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      alert('Você precisa fazer login para sincronizar!');
+      window.location.href = '/login.html';
+      return;
+    }
+
+    const userId = session.user.id;
+    
+    // Anima o ícone para mostrar que está carregando
+    iconeSync.textContent = 'sync';
+    iconeSync.style.animation = 'spin 1s linear infinite';
+
+    // 2. Prepara a lista pai
+    const listaLocal = await db.listas.get(listaId);
+    if (!listaLocal) throw new Error('Lista não encontrada localmente.');
+
+    const listaNuvem = {
+      id: listaLocal.id,
+      nome: listaLocal.nome,
+      orcamento: listaLocal.orcamento,
+      categoria: listaLocal.categoria,
+      user_id: userId // 👈 Aqui resolvemos aquele erro antigo do 'local'!
+    };
+
+    // 3. Prepara os itens
+    const itensLocais = await db.itens.where('lista_id').equals(listaId).toArray();
+    const itensNuvem = itensLocais.map(item => ({
+      id: item.id,
+      lista_id: item.lista_id,
+      nome: item.nome,
+      quantidade: item.quantidade,
+      preco_unitario: item.preco_unitario,
+      comprado: item.comprado,
+      user_id: userId
+    }));
+
+    // 4. Envia para o Supabase (Upsert atualiza se existir ou cria se não existir)
+    const { error: errorLista } = await supabase.from('listas').upsert(listaNuvem);
+    if (errorLista) throw errorLista;
+
+    if (itensNuvem.length > 0) {
+      const { error: errorItens } = await supabase.from('itens').upsert(itensNuvem);
+      if (errorItens) throw errorItens;
+    }
+
+    alert('Sincronização concluída com sucesso! ☁️');
+
+  } catch (error) {
+    console.error('Erro de Sync:', error);
+    alert('Erro ao sincronizar: ' + error.message);
+  } finally {
+    // Para a animação
+    iconeSync.style.animation = '';
+    iconeSync.textContent = 'cloud_upload';
+  }
 });
 
 // ==========================================
