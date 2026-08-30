@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@angular/pwa": "^21.2.19"
+  }
+}
