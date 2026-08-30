@@ -103,6 +103,55 @@
   <span class="material-symbols-rounded">upload_file</span>
 </label>
 
+<!-- 👇 Botão Flutuante da Calculadora 👇 -->
+    <button class="fab-calculator" id="btn-open-calc" title="Abrir Calculadora">
+      <span class="material-symbols-rounded">calculate</span>
+    </button>
+
+    <!-- 👇 Modal / Bottom Sheet da Calculadora 👇 -->
+    <div class="modal-overlay" id="modal-calculadora" style="display: none; align-items: flex-end;">
+      <div class="calc-container">
+        <div class="calc-header">
+          <h3 style="color: var(--primary-color);">Calculadora</h3>
+          <button class="btn-icon" id="btn-close-calc" style="color: var(--text-muted);">
+            <span class="material-symbols-rounded">close</span>
+          </button>
+        </div>
+        
+        <div class="calc-display" id="calc-display">0</div>
+        
+        <div class="calc-grid">
+          <button class="calc-btn btn-clear" data-action="clear">C</button>
+          <button class="calc-btn btn-op" data-action="delete">⌫</button>
+          <button class="calc-btn btn-op" data-action="operator" data-val="/">÷</button>
+          <button class="calc-btn btn-op" data-action="operator" data-val="*">×</button>
+
+          <button class="calc-btn" data-action="number" data-val="7">7</button>
+          <button class="calc-btn" data-action="number" data-val="8">8</button>
+          <button class="calc-btn" data-action="number" data-val="9">9</button>
+          <button class="calc-btn btn-op" data-action="operator" data-val="-">-</button>
+
+          <button class="calc-btn" data-action="number" data-val="4">4</button>
+          <button class="calc-btn" data-action="number" data-val="5">5</button>
+          <button class="calc-btn" data-action="number" data-val="6">6</button>
+          <button class="calc-btn btn-op" data-action="operator" data-val="+">+</button>
+
+          <button class="calc-btn" data-action="number" data-val="1">1</button>
+          <button class="calc-btn" data-action="number" data-val="2">2</button>
+          <button class="calc-btn" data-action="number" data-val="3">3</button>
+          <button class="calc-btn btn-equal" data-action="calculate" style="grid-row: span 2;">=</button>
+
+          <button class="calc-btn" data-action="number" data-val="0" style="grid-column: span 2;">0</button>
+          <button class="calc-btn" data-action="number" data-val=".">.</button>
+        </div>
+        
+        <!-- Botão para enviar o valor para o produto -->
+        <button class="btn-primary" id="btn-usar-valor" style="width: 100%; margin-top: 1.5rem; background-color: var(--success); color: #000;">
+          Usar Valor (R$)
+        </button>
+      </div>
+    </div>
+
 <!-- ... Botão de Sincronizar Nuvem (já existente) ... -->
     <script type="module" src="/src/lista.js"></script>
   </body>

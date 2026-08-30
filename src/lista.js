@@ -342,5 +342,84 @@ async function processarExcel(dados) {
   alert('Planilha importada com sucesso!');
 }
 
+// ==========================================
+// MÓDULO DA CALCULADORA FLUTUANTE
+// ==========================================
+const btnOpenCalc = document.getElementById('btn-open-calc');
+const btnCloseCalc = document.getElementById('btn-close-calc');
+const modalCalculadora = document.getElementById('modal-calculadora');
+const calcDisplay = document.getElementById('calc-display');
+const btnUsarValor = document.getElementById('btn-usar-valor');
+
+let expressaoCalc = '';
+
+// Abrir e Fechar Modal
+btnOpenCalc.addEventListener('click', () => modalCalculadora.style.display = 'flex');
+btnCloseCalc.addEventListener('click', () => modalCalculadora.style.display = 'none');
+modalCalculadora.addEventListener('click', (e) => {
+  if (e.target === modalCalculadora) modalCalculadora.style.display = 'none';
+});
+
+// Intercepta os cliques nos botões da calculadora
+document.querySelectorAll('.calc-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    const action = e.target.getAttribute('data-action');
+    const val = e.target.getAttribute('data-val');
+
+    if (action === 'number' || action === 'operator') {
+      if (calcDisplay.textContent === '0' && action !== 'operator' && val !== '.') {
+        expressaoCalc = val;
+      } else {
+        expressaoCalc += val;
+      }
+      calcDisplay.textContent = expressaoCalc;
+      
+    } else if (action === 'clear') {
+      expressaoCalc = '';
+      calcDisplay.textContent = '0';
+      
+    } else if (action === 'delete') {
+      expressaoCalc = expressaoCalc.toString().slice(0, -1);
+      calcDisplay.textContent = expressaoCalc || '0';
+      
+    } else if (action === 'calculate') {
+      try {
+        // Função segura para calcular a string nativamente
+        const resultado = new Function('return ' + expressaoCalc)();
+        
+        // Verifica se é infinito ou erro matemático (divisão por zero)
+        if (!isFinite(resultado)) throw new Error('Cálculo Inválido');
+        
+        // Limita a 2 casas decimais se for quebrado
+        expressaoCalc = Number.isInteger(resultado) ? resultado.toString() : resultado.toFixed(2);
+        calcDisplay.textContent = expressaoCalc;
+      } catch (err) {
+        calcDisplay.textContent = 'Erro';
+        expressaoCalc = '';
+      }
+    }
+  });
+});
+
+// O grande truque: Usar o valor calculado e mandar direto para o input do item
+btnUsarValor.addEventListener('click', () => {
+  const valorCalculado = parseFloat(calcDisplay.textContent);
+  
+  if (!isNaN(valorCalculado) && valorCalculado > 0) {
+    // 1. Fecha a calculadora
+    modalCalculadora.style.display = 'none';
+    
+    // 2. Preenche os dados no modal de adicionar item
+    inputs.nome.value = ''; // O usuário só precisa digitar o nome
+    inputs.qtd.value = 1;
+    inputs.preco.value = valorCalculado.toFixed(2); // Preço puxado da calculadora!
+    
+    // 3. Abre o modal de adicionar item instantaneamente
+    modalItem.style.display = 'flex';
+  } else {
+    alert('Calcule um valor válido maior que zero primeiro!');
+  }
+});
+
 // Inicia
 carregarDados();
