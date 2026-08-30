@@ -112,5 +112,87 @@ async function verificarUsuario() {
 
 verificarUsuario();
 
+const btnBaixarNuvem = document.getElementById('btn-baixar-nuvem');
+
+// Atualiza a verificação de usuário para mostrar o botão de download
+async function verificarUsuario() {
+  const { data: { session } } = await supabase.auth.getSession();
+  
+  if (session) {
+    btnConfig.innerHTML = `<span style="color: var(--danger); font-weight: bold;">Sair da Conta</span>`;
+    btnBaixarNuvem.style.display = 'block'; // Mostra o botão se estiver logado
+    
+    btnConfig.addEventListener('click', async () => {
+      if(confirm('Tem certeza que deseja sair?')) {
+        await supabase.auth.signOut();
+        // Limpa o banco local por segurança ao sair
+        await db.listas.clear();
+        await db.itens.clear();
+        window.location.href = '/login.html';
+      }
+    });
+  } else {
+    btnConfig.innerHTML = `<span style="color: var(--primary-color); font-weight: bold;">Fazer Login</span>`;
+    btnConfig.addEventListener('click', () => {
+      window.location.href = '/login.html';
+    });
+  }
+}
+
+verificarUsuario();
+
+// Função para baixar listas e itens do Supabase para o IndexedDB
+btnBaixarNuvem.addEventListener('click', async () => {
+  const icone = btnBaixarNuvem.querySelector('span');
+  
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return alert('Você precisa estar logado!');
+
+    // Anima o ícone
+    icone.style.animation = 'spin 1s linear infinite';
+
+    const userId = session.user.id;
+
+    // 1. Puxa as listas do usuário
+    const { data: listasNuvem, error: errorListas } = await supabase
+      .from('listas')
+      .select('*')
+      .eq('user_id', userId);
+      
+    if (errorListas) throw errorListas;
+
+    // 2. Puxa os itens do usuário
+    const { data: itensNuvem, error: errorItens } = await supabase
+      .from('itens')
+      .select('*')
+      .eq('user_id', userId);
+
+    if (errorItens) throw errorItens;
+
+    // 3. Limpa o banco local e insere os dados da nuvem (Garante que fique espelhado)
+    await db.listas.clear();
+    await db.itens.clear();
+
+    if (listasNuvem && listasNuvem.length > 0) {
+      await db.listas.bulkAdd(listasNuvem);
+    }
+    
+    if (itensNuvem && itensNuvem.length > 0) {
+      await db.itens.bulkAdd(itensNuvem);
+    }
+
+    // Recarrega a tela
+    carregarListas();
+    alert('Listas atualizadas com sucesso! ☁️⬇️');
+
+  } catch (error) {
+    console.error('Erro ao baixar:', error);
+    alert('Erro ao puxar dados da nuvem.');
+  } finally {
+    icone.style.animation = '';
+  }
+});
+
 // Inicializa carregando as listas ao abrir o app
 carregarListas();
