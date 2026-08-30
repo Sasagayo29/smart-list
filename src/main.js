@@ -1,4 +1,5 @@
 import { db, generateUUID } from './db.js';
+import { supabase } from './supabase.js'; // 👈 NOVA LINHA
 
 // Seleciona os elementos da tela
 const btnNovaLista = document.getElementById('btn-nova-lista');
@@ -80,6 +81,36 @@ async function carregarListas() {
     listasContainer.appendChild(card);
   });
 }
+
+// ==========================================
+// GERENCIAMENTO DE SESSÃO E LOGOUT
+// ==========================================
+const btnConfig = document.getElementById('btn-config'); // Usaremos o botão de configurações temporariamente para o Logout
+
+// Verifica se tem alguém logado para mudar o texto do botão
+async function verificarUsuario() {
+  const { data: { session } } = await supabase.auth.getSession();
+  
+  if (session) {
+    btnConfig.innerHTML = `<span style="color: var(--danger); font-weight: bold;">Sair da Conta</span>`;
+    
+    // Conecta a função real de Logout
+    btnConfig.addEventListener('click', async () => {
+      if(confirm('Tem certeza que deseja sair?')) {
+        await supabase.auth.signOut();
+        window.location.href = '/login.html';
+      }
+    });
+  } else {
+    // Se não tiver logado, o botão leva para o login
+    btnConfig.innerHTML = `<span style="color: var(--primary-color); font-weight: bold;">Fazer Login</span>`;
+    btnConfig.addEventListener('click', () => {
+      window.location.href = '/login.html';
+    });
+  }
+}
+
+verificarUsuario();
 
 // Inicializa carregando as listas ao abrir o app
 carregarListas();

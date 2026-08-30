@@ -208,6 +208,58 @@ btnSincronizar.addEventListener('click', async () => {
 });
 
 // ==========================================
+// LEITOR DE CÂMERA (OCR / Código de Barras)
+// ==========================================
+const inputCamera = document.getElementById('input-camera');
+
+inputCamera.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  // Pega o ícone para fazer a animação de carregamento
+  const labelCamera = document.querySelector('.camera-label');
+  const iconeCamera = labelCamera.querySelector('span');
+  
+  // Muda o ícone para ampulheta e faz girar
+  iconeCamera.textContent = 'hourglass_empty';
+  iconeCamera.style.animation = 'spin 1s linear infinite';
+
+  try {
+    // Aqui aconteceria o envio para uma API de IA ou Tesseract.js
+    // Simulando o tempo de processamento de 1.5 segundos:
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    // Exibe o resultado para o usuário confirmar
+    const nomeIdentificado = prompt("Etiqueta lida! Confirme o nome do produto:", "Produto Escaneado");
+
+    if (nomeIdentificado) {
+      const precoIdentificado = parseFloat(prompt(`Qual o preço de ${nomeIdentificado}?`, "0.00")) || 0;
+
+      // Salva direto no banco local
+      await db.itens.add({
+        id: generateUUID(),
+        lista_id: listaId,
+        nome: nomeIdentificado,
+        quantidade: 1,
+        preco_unitario: precoIdentificado,
+        comprado: false,
+        user_id: 'local'
+      });
+      
+      carregarDados(); // Atualiza a Ilha Dinâmica instantaneamente
+    }
+  } catch (error) {
+    console.error("Erro na leitura da imagem:", error);
+    alert('Falha ao processar a imagem.');
+  } finally {
+    // Restaura o ícone da câmera ao normal
+    iconeCamera.textContent = 'photo_camera';
+    iconeCamera.style.animation = '';
+    inputCamera.value = ''; // Limpa o input
+  }
+});
+
+// ==========================================
 // MÓDULO DE IMPORTAÇÃO (Excel e TXT)
 // ==========================================
 const inputImportar = document.getElementById('input-importar');
