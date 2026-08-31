@@ -31,10 +31,8 @@
               <span class="island-total" id="total-lista-ilha">R$ 0.00</span>
             </div>
             
-            <!-- 🌟 OS 5 SUPERPODERES DA LISTA 🌟 -->
+            <!-- 🌟 GESTÃO DA LISTA (Ilha Dinâmica) 🌟 -->
             <div class="island-actions">
-              <button class="island-icon primary" id="btn-add-item" title="Adicionar Manual"><span class="material-symbols-rounded">add</span></button>
-              <button class="island-icon primary" id="btn-mic" title="Comando de Voz"><span class="material-symbols-rounded">mic</span></button>
               <label class="island-icon secondary" title="Importar Planilha/TXT" style="margin: 0;">
                 <input type="file" id="input-importar" accept=".txt, .csv, .xlsx, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display: none;">
                 <span class="material-symbols-rounded">upload_file</span>
@@ -69,7 +67,18 @@
       </div>
     </div>
 
-    <button class="fab-calculator" id="btn-open-calc"><span class="material-symbols-rounded">calculate</span></button>
+    <!-- 👇 TORRE DE AÇÕES FLUTUANTES 👇 -->
+    <div class="fab-container">
+      <button class="fab-action fab-calc" id="btn-open-calc" title="Calculadora">
+        <span class="material-symbols-rounded">calculate</span>
+      </button>
+      <button class="fab-action fab-mic" id="btn-mic" title="Comando de Voz">
+        <span class="material-symbols-rounded">mic</span>
+      </button>
+      <button class="fab-action fab-add" id="btn-add-item" title="Adicionar Manual">
+        <span class="material-symbols-rounded">add</span>
+      </button>
+    </div>
     <div class="modal-overlay" id="modal-calculadora" style="display: none; align-items: flex-end;">
       <div class="calc-container">
         <div class="calc-header">
