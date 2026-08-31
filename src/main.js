@@ -105,22 +105,35 @@ async function carregarListas() {
     const card = document.createElement('div');
     card.className = 'lista-card';
     
-    // Adicionamos os botões de Clonar e Excluir no cabeçalho do cartão
+    // Adicionamos os botões de Clonar e Excluir protegidos contra quebra de linha
     card.innerHTML = `
-      <div class="card-header" style="align-items: flex-start; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 0;">
-        <div style="display: flex; align-items: center; flex: 1;">
-          <div class="cat-icon-card" style="background-color: ${catDetalhes.cor};"><span class="material-symbols-rounded">${catDetalhes.icone}</span></div>
-          <div><h3 style="margin: 0; font-size: 1.15rem;">${lista.nome}</h3><span style="color: var(--text-muted); font-size: 0.8rem;">${dataFormatada}</span></div>
+      <div class="card-header" style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1rem; gap: 0.5rem;">
+        
+        <div style="display: flex; align-items: center; flex: 1; overflow: hidden; gap: 0.75rem;">
+          <div class="cat-icon-card" style="background-color: ${catDetalhes.cor}; margin: 0; flex-shrink: 0;">
+            <span class="material-symbols-rounded">${catDetalhes.icone}</span>
+          </div>
+          <div style="overflow: hidden;">
+            <h3 style="margin: 0; font-size: 1.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${lista.nome}</h3>
+            <span style="color: var(--text-muted); font-size: 0.8rem;">${dataFormatada}</span>
+          </div>
         </div>
-        <div style="display: flex; gap: 0.25rem; z-index: 10;">
-           <button class="btn-icon btn-clonar" data-id="${lista.id}" style="color: var(--text-muted); padding: 0.25rem;" title="Duplicar"><span class="material-symbols-rounded" style="font-size: 1.25rem;">content_copy</span></button>
-           <button class="btn-icon btn-excluir-lista" data-id="${lista.id}" style="color: var(--danger); padding: 0.25rem;" title="Excluir"><span class="material-symbols-rounded" style="font-size: 1.25rem;">delete</span></button>
+
+        <div style="display: flex; gap: 0.25rem; flex-shrink: 0; z-index: 10;">
+           <button class="btn-icon btn-clonar" data-id="${lista.id}" style="color: var(--text-muted);" title="Duplicar">
+             <span class="material-symbols-rounded" style="font-size: 1.4rem;">content_copy</span>
+           </button>
+           <button class="btn-icon btn-excluir-lista" data-id="${lista.id}" style="color: var(--danger);" title="Excluir">
+             <span class="material-symbols-rounded" style="font-size: 1.4rem;">delete</span>
+           </button>
         </div>
       </div>
+
       <div class="progress-container">
         <div class="progress-labels"><span>R$ ${gastoTotal.toFixed(2)}</span><span>R$ ${orcamento.toFixed(2)}</span></div>
         <div class="progress-bar-bg"><div class="progress-fill" style="width: ${porcentagem}%; background-color: ${corBarra};"></div></div>
-      </div>`;
+      </div>
+    `;
       
     // Previne que o clique nos botões abra a lista
     card.addEventListener('click', (e) => {

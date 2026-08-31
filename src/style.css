@@ -209,3 +209,24 @@ body { background-color: var(--bg-main); color: var(--text-main); overflow-x: hi
   .modal-actions { flex-direction: column-reverse; }
   .modal-actions button { width: 100%; }
 }
+
+/* =========================================
+   ÍCONES TRANSPARENTES GLOBAIS
+   ========================================= */
+.btn-icon {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  transition: var(--transition);
+  color: var(--text-main);
+  flex-shrink: 0;
+}
+.btn-icon:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
