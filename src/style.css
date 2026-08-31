@@ -165,6 +165,19 @@ body { background-color: var(--bg-main); color: var(--text-main); overflow-x: hi
 @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
 
 /* =========================================
+   TEMA CLARO (LIGHT MODE)
+   ========================================= */
+body.light-theme {
+  --primary-color: #2563eb;
+  --secondary-color: #f8fafc;
+  --bg-main: #f1f5f9;
+  --bg-card: #ffffff;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --border-color: #e2e8f0;
+}
+
+/* =========================================
    📱 RESPONSIVIDADE NATIVA (MOBILE)
    ========================================= */
 @media (max-width: 768px) {

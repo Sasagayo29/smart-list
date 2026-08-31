@@ -179,47 +179,80 @@ async function carregarListas() {
   renderizarGrafico(labels.slice(-5), orcs.slice(-5), gasts.slice(-5));
 }
 
+import * as XLSX from 'xlsx'; // Importação necessária para o Excel
+
 async function verificarUsuario() {
   const { data: { session } } = await supabase.auth.getSession();
   if (session) {
-    btnConfig.innerHTML = `<span class="material-symbols-rounded" style="color: var(--danger);">logout</span>`;
-    btnBaixarNuvem.style.display = 'block'; 
-    btnConfig.addEventListener('click', async () => {
-      if(confirm('Sair da conta?')) { await supabase.auth.signOut(); await db.listas.clear(); await db.itens.clear(); window.location.href = '/login.html'; }
-    });
-  } else {
-    btnConfig.innerHTML = `<span class="material-symbols-rounded" style="color: var(--primary-color);">login</span>`;
-    btnConfig.addEventListener('click', () => window.location.href = '/login.html');
+    btnBaixarNuvem.style.display = 'flex'; 
+    // Removemos aquele código que estragava o botão de config!
   }
 }
 verificarUsuario();
 
+// ==========================================
+// IMPORTAR LISTA INTEIRA DO EXCEL/TXT
+// ==========================================
+const inputImportDashboard = document.getElementById('input-import-dashboard');
+if (inputImportDashboard) {
+  inputImportDashboard.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const extensao = file.name.split('.').pop().toLowerCase();
+    const nomeLista = file.name.replace(/\.[^/.]+$/, ""); // Pega o nome do arquivo
+    const novaListaId = generateUUID();
+
+    try {
+      // Cria a capa da lista
+      await db.listas.add({ id: novaListaId, nome: `Importada: ${nomeLista}`, categoria: 'outros', orcamento: 0, created_at: new Date().toISOString(), user_id: 'local' });
+
+      // Lê o conteúdo
+      if (extensao === 'txt' || extensao === 'csv') {
+        const texto = await file.text();
+        for (const linha of texto.split('\n')) {
+          if (linha.trim() === '') continue;
+          const partes = linha.split(',');
+          await db.itens.add({ id: generateUUID(), lista_id: novaListaId, nome: partes[0].trim(), quantidade: parseInt(partes[1]) || 1, preco_unitario: parseFloat(partes[2]) || 0, comprado: false, user_id: 'local' });
+        }
+      } else {
+        const buffer = await file.arrayBuffer();
+        const workbook = XLSX.read(buffer);
+        const dados = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+        for (const linha of dados) {
+          const nome = linha.Nome || linha.nome || linha.Produto || linha.produto;
+          if (!nome) continue; 
+          await db.itens.add({ id: generateUUID(), lista_id: novaListaId, nome: String(nome), quantidade: parseInt(linha.Qtd || linha.Quantidade || 1), preco_unitario: parseFloat(linha.Preco || linha.Valor || 0), comprado: false, user_id: 'local' });
+        }
+      }
+      mostrarToast('Lista importada com sucesso!', 'success');
+      carregarListas();
+    } catch (error) {
+      mostrarToast('Erro ao importar arquivo', 'error');
+    }
+    e.target.value = ''; // Limpa o input
+  });
+}
+
+// Lógica de Sincronização
 btnBaixarNuvem.addEventListener('click', async () => {
   const icone = btnBaixarNuvem.querySelector('span');
   try {
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return mostrarToast('Você precisa estar logado!', 'error');
+    if (!session) return window.location.href = '/login.html'; // Redireciona sutilmente
 
     icone.style.animation = 'spin 1s linear infinite';
     const userId = session.user.id;
-
     const listasLocais = await db.listas.toArray();
     const itensLocais = await db.itens.toArray();
 
-    if (listasLocais.length > 0) {
-      const { error: errListas } = await supabase.from('listas').upsert(listasLocais.map(l => ({ ...l, orcamento: parseFloat(l.orcamento)||0, user_id: userId })));
-      if (errListas) throw errListas;
-    }
-    if (itensLocais.length > 0) {
-      const { error: errItens } = await supabase.from('itens').upsert(itensLocais.map(i => ({ ...i, preco_unitario: parseFloat(i.preco_unitario)||0, user_id: userId })));
-      if (errItens) throw errItens;
-    }
+    if (listasLocais.length > 0) await supabase.from('listas').upsert(listasLocais.map(l => ({ ...l, orcamento: parseFloat(l.orcamento)||0, user_id: userId })));
+    if (itensLocais.length > 0) await supabase.from('itens').upsert(itensLocais.map(i => ({ ...i, preco_unitario: parseFloat(i.preco_unitario)||0, user_id: userId })));
 
-    const [{ data: listasNuvem, error: eL }, { data: itensNuvem, error: eI }] = await Promise.all([
+    const [{ data: listasNuvem }, { data: itensNuvem }] = await Promise.all([
       supabase.from('listas').select('*').eq('user_id', userId),
       supabase.from('itens').select('*').eq('user_id', userId)
     ]);
-    if (eL || eI) throw (eL || eI);
 
     await db.listas.clear(); await db.itens.clear();
     if (listasNuvem?.length) await db.listas.bulkAdd(listasNuvem);

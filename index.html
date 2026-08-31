@@ -1,72 +1,64 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
   <head>
+    <script>if(localStorage.getItem('theme') === 'light') document.documentElement.classList.add('light-theme');</script>
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#0ea5e9" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Smart List - Dashboard</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
-    <!-- Biblioteca de Gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="/src/style.css" />
+    <style>
+      /* Esconde a barra inferior no Dashboard para focar nos cartões */
+      @media (max-width: 768px) { .vertical-toolbar { display: none !important; } .main-content { padding-bottom: 2rem !important; } }
+    </style>
   </head>
-  <body>
+  <body style="overflow-x: hidden;">
     <div class="layout-container">
-      <nav class="vertical-toolbar">
-        <div class="brand"><h3>SL</h3></div>
-        <ul class="nav-links">
-          <li class="active"><span class="material-symbols-rounded">home</span></li>
-          <li id="btn-config"><span class="material-symbols-rounded">settings</span></li>
-          <li id="btn-config" onclick="window.location.href='/config.html'"><span class="material-symbols-rounded">settings</span></li>
-        </ul>
-        <div class="spacer"></div>
-      </nav>
-
-      <main class="main-content">
-        <header class="page-header">
+      <main class="main-content" style="padding-left: 1rem; padding-right: 1rem;">
+        <header class="page-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 2rem;">
           <div class="header-title">
-            <h2>Dashboard</h2>
-            <p class="subtitle">Gerencie suas compras e orçamentos</p>
+            <h2 style="font-size: 1.5rem;">Smart List</h2>
           </div>
-          <div class="header-actions" style="display: flex; gap: 0.75rem; align-items: center;">
-            <button class="btn-cancel btn-icon-only" id="btn-baixar-nuvem" title="Sincronizar" style="display: none;">
+          
+          <!-- NOVO AGRUPAMENTO DE BOTÕES NO TOPO -->
+          <div class="header-actions" style="display: flex; gap: 0.5rem; align-items: center;">
+            <label class="btn-icon" title="Importar Planilha/TXT" style="margin: 0;">
+              <input type="file" id="input-import-dashboard" accept=".txt, .csv, .xlsx, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display: none;">
+              <span class="material-symbols-rounded">upload_file</span>
+            </label>
+            <button class="btn-icon" id="btn-baixar-nuvem" title="Sincronizar" style="display: none;">
               <span class="material-symbols-rounded">sync</span>
             </button>
-            <button class="btn-primary" id="btn-nova-lista">
-              <span class="material-symbols-rounded">add</span>
-              <span class="text-nova-lista">Nova Lista</span>
+            <button class="btn-icon" onclick="window.location.href='/config.html'" title="Configurações">
+              <span class="material-symbols-rounded">settings</span>
             </button>
           </div>
         </header>
 
         <div class="content-area">
-          <!-- Gráfico Analítico -->
-          <div id="chart-section" style="background: var(--bg-card); padding: 1.5rem; border-radius: var(--radius-lg); margin-bottom: 2rem; border: 1px solid var(--border-color); display: none;">
-            <h3 style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--text-muted);">Análise das Últimas Listas</h3>
-            <canvas id="grafico-gastos" style="max-height: 220px;"></canvas>
+          <div id="chart-section" style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius-lg); margin-bottom: 2rem; border: 1px solid var(--border-color); display: none;">
+            <h3 style="margin-bottom: 1rem; font-size: 1rem; color: var(--text-muted);">Desempenho</h3>
+            <canvas id="grafico-gastos" style="max-height: 180px;"></canvas>
           </div>
-
           <div id="listas-container" class="listas-grid"></div>
-          <p class="empty-state" id="empty-state" style="display: none;">
-            Nenhuma lista encontrada. Crie sua primeira lista!
-          </p>
+          <p class="empty-state" id="empty-state" style="display: none;">Nenhuma lista. Comece criando ou importando uma!</p>
         </div>
       </main>
     </div>
+
+    <button class="btn-primary" id="btn-nova-lista" style="position: fixed; bottom: 2rem; right: 1.5rem; width: 60px; height: 60px; border-radius: 50%; padding: 0; box-shadow: var(--shadow-md); z-index: 90;">
+      <span class="material-symbols-rounded" style="font-size: 2rem; margin: 0;">add</span>
+    </button>
 
     <!-- Modal Nova Lista -->
     <div class="modal-overlay" id="modal-lista" style="display: none;">
       <div class="modal-content">
         <h3>Criar Nova Lista</h3>
-        <div class="form-group">
-          <label>Nome da Lista</label>
-          <input type="text" id="input-nome-lista" placeholder="Ex: Compras do Mês" required>
-        </div>
-        <div class="form-group">
-          <label>Orçamento Limite (R$)</label>
-          <input type="number" id="input-orcamento-lista" placeholder="Ex: 500.00">
-        </div>
+        <div class="form-group"><label>Nome da Lista</label><input type="text" id="input-nome-lista" required></div>
+        <div class="form-group"><label>Orçamento Limite (R$)</label><input type="number" id="input-orcamento-lista"></div>
         <div class="form-group">
           <label>Categoria</label>
           <div class="category-selector" id="category-selector">
@@ -76,10 +68,7 @@
             <div class="cat-option" data-cat="outros" style="--cat-color: #64748b;"><span class="material-symbols-rounded">category</span><span>Outros</span></div>
           </div>
         </div>
-        <div class="modal-actions">
-          <button class="btn-cancel" id="btn-fechar-modal">Cancelar</button>
-          <button class="btn-primary" id="btn-salvar-lista">Criar Lista</button>
-        </div>
+        <div class="modal-actions"><button class="btn-cancel" id="btn-fechar-modal">Cancelar</button><button class="btn-primary" id="btn-salvar-lista">Criar</button></div>
       </div>
     </div>
     <div id="toast-container"></div>

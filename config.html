@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
   <head>
+    <script>if(localStorage.getItem('theme') === 'light') document.documentElement.classList.add('light-theme');</script>
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#0ea5e9" />
     <meta charset="UTF-8" />
@@ -11,40 +12,33 @@
   </head>
   <body>
     <div class="layout-container">
-      <nav class="vertical-toolbar">
-        <div class="brand"><h3>SL</h3></div>
-        <ul class="nav-links">
-          <li onclick="window.location.href='/'"><span class="material-symbols-rounded">home</span></li>
-          <li class="active"><span class="material-symbols-rounded">settings</span></li>
-        </ul>
-        <div class="spacer"></div>
-      </nav>
-
-      <main class="main-content">
-        <header class="page-header" style="justify-content: flex-start; gap: 1rem;">
-          <button class="btn-icon" onclick="window.location.href='/'"><span class="material-symbols-rounded">arrow_back</span></button>
-          <div class="header-title">
-            <h2>Configurações</h2>
-          </div>
+      <main class="main-content" style="padding: 1.5rem 1rem;">
+        <header class="page-header" style="justify-content: flex-start; gap: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 2rem;">
+          <button class="btn-icon" onclick="window.location.href='/'" style="margin: 0;"><span class="material-symbols-rounded">arrow_back</span></button>
+          <h2 style="font-size: 1.5rem; margin: 0;">Configurações</h2>
         </header>
 
         <div class="content-area" style="max-width: 600px; margin: 0 auto; width: 100%;">
           
-          <div class="lista-card" style="margin-bottom: 2rem; display: flex; align-items: center; gap: 1.5rem;">
-            <div style="background: var(--primary-color); width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 2rem; color: white;">
+          <!-- LAYOUT DO E-MAIL CORRIGIDO (Blindado contra quebras) -->
+          <div class="lista-card" style="margin-bottom: 2rem; display: flex; align-items: center; gap: 1rem; padding: 1.25rem;">
+            <div style="background: var(--primary-color); width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: white; flex-shrink: 0;">
               <span class="material-symbols-rounded">person</span>
             </div>
-            <div>
-              <h3 id="user-email" style="margin-bottom: 0.25rem;">Carregando...</h3>
-              <p style="color: var(--success); font-size: 0.9rem; font-weight: 600;">Conta Sincronizada</p>
+            <div style="overflow: hidden; flex: 1;">
+              <h3 id="user-email" style="margin: 0; font-size: 1.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Carregando...</h3>
+              <p style="color: var(--success); font-size: 0.85rem; font-weight: 600; margin-top: 0.2rem;">Conta Sincronizada</p>
             </div>
           </div>
 
-          <div style="display: flex; flex-direction: column; gap: 1rem; width: 100%;">
-            
-            <button class="btn-cancel" style="width: 100%; display: flex; justify-content: space-between; align-items: center; border-color: var(--border-color); color: var(--text-main); padding: 1rem;">
-              <span style="display: flex; align-items: center; gap: 1rem;"><span class="material-symbols-rounded">palette</span> Aparência (Em breve)</span>
-              <span class="material-symbols-rounded">chevron_right</span>
+          <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <!-- BOTÃO DE TEMA ATIVADO -->
+            <button class="btn-cancel" id="btn-tema" style="width: 100%; display: flex; justify-content: space-between; align-items: center; border-color: var(--border-color); color: var(--text-main); padding: 1rem;">
+              <span style="display: flex; align-items: center; gap: 1rem;">
+                <span class="material-symbols-rounded" id="icone-tema">dark_mode</span> 
+                <span id="texto-tema">Aparência (Escuro)</span>
+              </span>
+              <span class="material-symbols-rounded">sync_alt</span>
             </button>
             
             <button class="btn-cancel" id="btn-limpar-cache" style="width: 100%; display: flex; align-items: center; justify-content: flex-start; gap: 1rem; border-color: var(--border-color); color: var(--text-main); padding: 1rem;">
@@ -54,9 +48,7 @@
             <button class="btn-primary" id="btn-logout" style="width: 100%; background-color: var(--danger); margin-top: 1rem; padding: 1rem;">
               <span class="material-symbols-rounded">logout</span> Sair da Conta
             </button>
-            
           </div>
-
         </div>
       </main>
     </div>
