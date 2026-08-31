@@ -40,6 +40,9 @@ body { background-color: var(--bg-main); color: var(--text-main); overflow-x: hi
 .btn-primary:hover { background-color: #0284c7; box-shadow: var(--shadow-md); }
 .btn-cancel { background: transparent; border: 1px solid var(--border-color); color: var(--text-muted); padding: 0.75rem 1.5rem; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition); }
 .btn-cancel:hover { background-color: rgba(255,255,255,0.05); }
+/* Botão apenas com ícone */
+.btn-icon-only { padding: 0.6rem; display: flex; align-items: center; justify-content: center; }
+.btn-icon-only span { font-size: 1.5rem; }
 
 /* Grid de Listas */
 .listas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
@@ -160,3 +163,49 @@ body { background-color: var(--bg-main); color: var(--text-main); overflow-x: hi
 .toast.info .toast-icon { color: var(--primary-color); }
 @keyframes slideIn { to { transform: translateX(0); } }
 @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
+
+/* =========================================
+   📱 RESPONSIVIDADE NATIVA (MOBILE)
+   ========================================= */
+@media (max-width: 768px) {
+  .layout-container { flex-direction: column; }
+  
+  /* Transforma Barra Lateral em Bottom Nav */
+  .vertical-toolbar { width: 100%; height: 70px; flex-direction: row; justify-content: space-around; padding: 0; border-right: none; border-top: 1px solid var(--border-color); position: fixed; bottom: 0; left: 0; background-color: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); }
+  .brand { display: none; }
+  .nav-links { flex-direction: row; justify-content: space-around; align-items: center; height: 100%; margin: 0; }
+  .nav-links li { border-left: none !important; border-bottom: 3px solid transparent; padding: 0.5rem; flex: 1; display: flex; flex-direction: column; gap: 0.25rem; align-items: center; justify-content: center; font-size: 0.75rem; }
+  .nav-links li.active { border-bottom-color: var(--primary-color); background: linear-gradient(to top, rgba(14, 165, 233, 0.1), transparent); }
+  
+  /* Ajusta o conteúdo para não ficar debaixo da barra */
+  .main-content { padding: 1.5rem 1rem 90px 1rem; }
+  
+  /* 🌟 NOVO: Otimização Extrema de Espaço no Topo 🌟 */
+  .page-header { flex-direction: row; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+  .subtitle { display: none; } /* Esconde o subtítulo para ganhar espaço vertical */
+  .header-title h2 { font-size: 1.5rem; margin: 0; }
+  .header-actions { width: auto; justify-content: flex-end; }
+  
+  /* Transforma "Nova Lista" em um Botão Flutuante (FAB) clássico */
+  #btn-nova-lista {
+    position: fixed;
+    bottom: 90px;
+    right: 1.5rem;
+    width: 60px;
+    height: 60px;
+    border-radius: var(--radius-full);
+    padding: 0;
+    box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4);
+    z-index: 90;
+  }
+  .text-nova-lista { display: none; } /* Esconde o texto, deixa só o "+" */
+  #btn-nova-lista span.material-symbols-rounded { font-size: 2rem; margin: 0; }
+
+  /* Força 1 coluna na Grid de listas */
+  .listas-grid { grid-template-columns: 1fr; gap: 1rem; }
+  
+  /* Ajusta Modais */
+  .modal-content { padding: 1.5rem; }
+  .modal-actions { flex-direction: column-reverse; }
+  .modal-actions button { width: 100%; }
+}
