@@ -167,7 +167,9 @@ async function verificarUsuario() {
 
 verificarUsuario();
 
-// Função para baixar listas e itens do Supabase para o IndexedDB
+// ==========================================
+// SINCRONIZAÇÃO DE MÃO DUPLA (DASHBOARD)
+// ==========================================
 btnBaixarNuvem.addEventListener('click', async () => {
   const icone = btnBaixarNuvem.querySelector('span');
   
@@ -175,40 +177,72 @@ btnBaixarNuvem.addEventListener('click', async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return alert('Você precisa estar logado!');
 
+    // Anima o ícone
     icone.style.animation = 'spin 1s linear infinite';
     const userId = session.user.id;
 
+    // --- 1. FAZ O UPLOAD PRIMEIRO (Salva o que é novo) ---
+    const listasLocais = await db.listas.toArray();
+    const itensLocais = await db.itens.toArray();
+
+    if (listasLocais.length > 0) {
+      const listasParaNuvem = listasLocais.map(lista => ({
+        id: lista.id,
+        nome: lista.nome,
+        categoria: lista.categoria,
+        orcamento: parseFloat(lista.orcamento) || 0,
+        created_at: lista.created_at || new Date().toISOString(),
+        user_id: userId // Atualiza o ID do usuário local para o ID da nuvem
+      }));
+      const { error: errListas } = await supabase.from('listas').upsert(listasParaNuvem);
+      if (errListas) throw errListas;
+    }
+
+    if (itensLocais.length > 0) {
+      const itensParaNuvem = itensLocais.map(item => ({
+        id: item.id,
+        lista_id: item.lista_id,
+        nome: item.nome,
+        quantidade: item.quantidade,
+        preco_unitario: parseFloat(item.preco_unitario) || 0,
+        comprado: item.comprado,
+        user_id: userId
+      }));
+      const { error: errItens } = await supabase.from('itens').upsert(itensParaNuvem);
+      if (errItens) throw errItens;
+    }
+
+    // --- 2. DEPOIS FAZ O DOWNLOAD (Puxa tudo consolidado) ---
     const { data: listasNuvem, error: errorListas } = await supabase
       .from('listas')
       .select('*')
       .eq('user_id', userId);
-      
     if (errorListas) throw errorListas;
 
     const { data: itensNuvem, error: errorItens } = await supabase
       .from('itens')
       .select('*')
       .eq('user_id', userId);
-
     if (errorItens) throw errorItens;
 
+    // --- 3. ATUALIZA O BANCO LOCAL ---
     await db.listas.clear();
     await db.itens.clear();
 
     if (listasNuvem && listasNuvem.length > 0) {
       await db.listas.bulkAdd(listasNuvem);
     }
-    
     if (itensNuvem && itensNuvem.length > 0) {
       await db.itens.bulkAdd(itensNuvem);
     }
 
+    // Recarrega a tela com os dados protegidos
     carregarListas();
-    alert('Listas atualizadas com sucesso! ☁️⬇️');
+    alert('Sincronização completa! ☁️🔄');
 
   } catch (error) {
-    console.error('Erro ao baixar:', error);
-    alert('Erro ao puxar dados da nuvem.');
+    console.error('Erro ao sincronizar:', error);
+    alert('Erro ao comunicar com a nuvem.');
   } finally {
     icone.style.animation = '';
   }
