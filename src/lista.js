@@ -164,8 +164,8 @@ inputBusca.addEventListener('input', async (e) => {
   renderizarItens(todosItens.filter(item => item.nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(termo)));
 });
 
-// Compartilhar no WhatsApp
-document.getElementById('btn-whatsapp').addEventListener('click', async () => {
+// Compartilhamento Nativo (Web Share API)
+document.getElementById('btn-share').addEventListener('click', async () => {
   const lista = await db.listas.get(listaId);
   const itens = await db.itens.where('lista_id').equals(listaId).toArray();
   if (itens.length === 0) return mostrarToast('A lista está vazia!', 'error');
@@ -181,8 +181,22 @@ document.getElementById('btn-whatsapp').addEventListener('click', async () => {
   });
 
   texto += `\n💰 *Total Estimado: R$ ${total.toFixed(2)}*\n\n_Gerado via Smart List_`;
-  window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank');
-  mostrarToast('Abrindo WhatsApp...', 'info');
+
+  // Tenta usar a interface nativa do celular (Abre opções do iOS/Android)
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: `Smart List - ${lista.nome}`,
+        text: texto
+      });
+      mostrarToast('Compartilhado com sucesso!', 'success');
+    } catch (err) {
+      console.log('Compartilhamento cancelado pelo usuário.');
+    }
+  } else {
+    // Fallback: Se estiver no PC ou navegador antigo, vai pro WhatsApp
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank');
+  }
 });
 
 const btnSincronizar = document.getElementById('btn-sincronizar');

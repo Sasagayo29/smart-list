@@ -85,7 +85,6 @@ async function carregarListas() {
   }
   
   emptyState.style.display = 'none';
-  
   const labels = []; const orcs = []; const gasts = [];
 
   for (const lista of listas) {
@@ -105,20 +104,65 @@ async function carregarListas() {
 
     const card = document.createElement('div');
     card.className = 'lista-card';
+    
+    // Adicionamos os botões de Clonar e Excluir no cabeçalho do cartão
     card.innerHTML = `
-      <div class="card-header" style="align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 0;">
-        <div style="display: flex; align-items: center;">
+      <div class="card-header" style="align-items: flex-start; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 0;">
+        <div style="display: flex; align-items: center; flex: 1;">
           <div class="cat-icon-card" style="background-color: ${catDetalhes.cor};"><span class="material-symbols-rounded">${catDetalhes.icone}</span></div>
           <div><h3 style="margin: 0; font-size: 1.15rem;">${lista.nome}</h3><span style="color: var(--text-muted); font-size: 0.8rem;">${dataFormatada}</span></div>
+        </div>
+        <div style="display: flex; gap: 0.25rem; z-index: 10;">
+           <button class="btn-icon btn-clonar" data-id="${lista.id}" style="color: var(--text-muted); padding: 0.25rem;" title="Duplicar"><span class="material-symbols-rounded" style="font-size: 1.25rem;">content_copy</span></button>
+           <button class="btn-icon btn-excluir-lista" data-id="${lista.id}" style="color: var(--danger); padding: 0.25rem;" title="Excluir"><span class="material-symbols-rounded" style="font-size: 1.25rem;">delete</span></button>
         </div>
       </div>
       <div class="progress-container">
         <div class="progress-labels"><span>R$ ${gastoTotal.toFixed(2)}</span><span>R$ ${orcamento.toFixed(2)}</span></div>
         <div class="progress-bar-bg"><div class="progress-fill" style="width: ${porcentagem}%; background-color: ${corBarra};"></div></div>
       </div>`;
-    card.addEventListener('click', () => window.location.href = `/lista.html?id=${lista.id}`);
+      
+    // Previne que o clique nos botões abra a lista
+    card.addEventListener('click', (e) => {
+      if(!e.target.closest('.btn-clonar') && !e.target.closest('.btn-excluir-lista')) {
+        window.location.href = `/lista.html?id=${lista.id}`;
+      }
+    });
     listasContainer.appendChild(card);
   }
+
+  // ATIVA OS BOTÕES DE AÇÃO DOS CARTÕES
+  document.querySelectorAll('.btn-excluir-lista').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+       e.stopPropagation();
+       if(confirm('Excluir esta lista e todos os seus produtos?')) {
+          const id = e.currentTarget.getAttribute('data-id');
+          await db.itens.where('lista_id').equals(id).delete();
+          await db.listas.delete(id);
+          mostrarToast('Lista excluída!', 'success');
+          carregarListas();
+       }
+    });
+  });
+
+  document.querySelectorAll('.btn-clonar').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+       e.stopPropagation();
+       const id = e.currentTarget.getAttribute('data-id');
+       const listaAntiga = await db.listas.get(id);
+       const itensAntigos = await db.itens.where('lista_id').equals(id).toArray();
+       const novaListaId = generateUUID();
+       
+       await db.listas.add({ ...listaAntiga, id: novaListaId, nome: listaAntiga.nome + ' (Cópia)', created_at: new Date().toISOString() });
+       for(const item of itensAntigos) {
+          await db.itens.add({ ...item, id: generateUUID(), lista_id: novaListaId, comprado: false }); // Clona com tudo desmarcado!
+       }
+       
+       mostrarToast('Lista duplicada com sucesso!', 'success');
+       carregarListas();
+    });
+  });
+
   renderizarGrafico(labels.slice(-5), orcs.slice(-5), gasts.slice(-5));
 }
 
