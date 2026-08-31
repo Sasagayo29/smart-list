@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
   <head>
+    <script>if(localStorage.getItem('theme') === 'light') document.documentElement.classList.add('light-theme');</script>
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#0ea5e9" />
     <meta charset="UTF-8" />
@@ -24,19 +25,22 @@
       <main class="main-content">
         <div class="dynamic-island-container">
           <div class="dynamic-island unified-island">
-            <button class="island-icon" id="btn-voltar-ilha"><span class="material-symbols-rounded">arrow_back_ios_new</span></button>
+            <button class="island-icon" id="btn-voltar-ilha" title="Voltar"><span class="material-symbols-rounded">arrow_back_ios_new</span></button>
             <div class="island-center">
               <span class="island-title" id="nome-lista-ilha">Carregando...</span>
               <span class="island-total" id="total-lista-ilha">R$ 0.00</span>
             </div>
+            
+            <!-- 🌟 OS 5 SUPERPODERES DA LISTA 🌟 -->
             <div class="island-actions">
-              <button class="island-icon primary" id="btn-add-item"><span class="material-symbols-rounded">add</span></button>
-              <!-- Botão do WhatsApp -->
-              <!-- Substitua o id="btn-whatsapp" por id="btn-share" -->
-              <button class="island-icon secondary" id="btn-share" title="Compartilhar Lista">
-                <span class="material-symbols-rounded">share</span>
-              </button>
-              <button class="island-icon secondary" id="btn-sincronizar"><span class="material-symbols-rounded">sync</span></button>
+              <button class="island-icon primary" id="btn-add-item" title="Adicionar Manual"><span class="material-symbols-rounded">add</span></button>
+              <button class="island-icon primary" id="btn-mic" title="Comando de Voz"><span class="material-symbols-rounded">mic</span></button>
+              <label class="island-icon secondary" title="Importar Planilha/TXT" style="margin: 0;">
+                <input type="file" id="input-importar" accept=".txt, .csv, .xlsx, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display: none;">
+                <span class="material-symbols-rounded">upload_file</span>
+              </label>
+              <button class="island-icon secondary" id="btn-share" title="Exportar"><span class="material-symbols-rounded">share</span></button>
+              <button class="island-icon secondary" id="btn-sincronizar" title="Sincronizar"><span class="material-symbols-rounded">sync</span></button>
             </div>
           </div>
         </div>
@@ -46,13 +50,13 @@
             <span class="material-symbols-rounded">search</span>
             <input type="text" id="input-busca" placeholder="Buscar na lista...">
           </div>
-          <p class="empty-state" id="empty-state-itens">Sua lista está vazia. Adicione um produto!</p>
+          <p class="empty-state" id="empty-state-itens">Sua lista está vazia. Comece a adicionar!</p>
           <div class="itens-list" id="itens-container"></div>
         </div>
       </main>
     </div>
 
-    <!-- Modais e Calculadora Ocultos -->
+    <!-- Modais e Calculadora (Ocultos) -->
     <div class="modal-overlay" id="modal-item" style="display: none;">
       <div class="modal-content">
         <h3>Adicionar Produto</h3>
