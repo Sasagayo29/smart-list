@@ -250,4 +250,43 @@ document.getElementById('btn-usar-valor').addEventListener('click', () => {
   } else { mostrarToast('Calcule um valor válido!', 'error'); }
 });
 
+// 📷 MÓDULO DE CÂMERA (LEITURA DE ETIQUETA)
+const inputCamera = document.getElementById('input-camera');
+if (inputCamera) {
+  inputCamera.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    mostrarToast('Processando imagem...', 'info');
+
+    try {
+      // Simula o tempo de uma IA lendo a etiqueta via API
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      const nomeIdentificado = prompt("Etiqueta lida! Confirme o nome do produto:", "Produto Escaneado");
+      
+      if (nomeIdentificado) {
+        const precoIdentificado = parseFloat(prompt(`Qual o preço de ${nomeIdentificado}?`, "0.00")) || 0;
+
+        await db.itens.add({
+          id: generateUUID(),
+          lista_id: listaId,
+          nome: nomeIdentificado,
+          quantidade: 1,
+          preco_unitario: precoIdentificado,
+          comprado: false,
+          user_id: 'local'
+        });
+        
+        mostrarToast('Produto escaneado adicionado!', 'success');
+        carregarDados();
+      }
+    } catch (error) {
+      mostrarToast('Falha ao processar a imagem.', 'error');
+    } finally {
+      inputCamera.value = ''; // Limpa o input para poder usar a câmera de novo em seguida
+    }
+  });
+}
+
 carregarDados();

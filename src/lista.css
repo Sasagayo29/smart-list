@@ -1,3 +1,6 @@
+.content-area {
+  padding-bottom: 130px; /* Garante que os últimos itens não fiquem escondidos */
+}
 /* Ilha Dinâmica Unificada */
 .dynamic-island-container { position: sticky; top: 10px; z-index: 90; display: flex; justify-content: center; margin-bottom: 2rem; pointer-events: none; width: 100%; }
 .unified-island { background-color: #000000; color: #ffffff; border-radius: 99px; padding: 0.35rem 0.5rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); pointer-events: auto; width: 100%; max-width: 450px; border: 1px solid var(--border-color); }
@@ -60,9 +63,10 @@
 }
 
 /* Cores específicas para cada ação */
-.fab-calc { background-color: var(--text-muted); } /* Cinza elegante */
-.fab-mic { background-color: #8b5cf6; } /* Roxo tecnológico para IA/Voz */
-.fab-add { 
+.fab-calc { background-color: var(--text-muted); } 
+.fab-cam { background-color: #f59e0b; cursor: pointer; } /* Laranja para a Câmera */
+.fab-mic { background-color: #8b5cf6; }
+.fab-add {
   background-color: var(--primary-color); 
   width: 65px; 
   height: 65px; 
