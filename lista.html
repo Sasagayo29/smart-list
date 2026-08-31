@@ -2,7 +2,7 @@
 <html lang="pt-BR">
   <head>
     <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#2563eb" />
+    <meta name="theme-color" content="#0ea5e9" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Smart List - Itens</title>
@@ -15,38 +15,25 @@
       <nav class="vertical-toolbar">
         <div class="brand"><h3>SL</h3></div>
         <ul class="nav-links">
-          <li id="btn-voltar-nav">← Voltar</li>
-          <li class="active">Itens da Lista</li>
+          <li id="btn-voltar-nav"><span class="material-symbols-rounded">arrow_back</span></li>
+          <li class="active"><span class="material-symbols-rounded">list</span></li>
         </ul>
         <div class="spacer"></div>
       </nav>
 
       <main class="main-content">
-        <!-- 🌟 Ilha Dinâmica Unificada 🌟 -->
         <div class="dynamic-island-container">
           <div class="dynamic-island unified-island">
-            <button class="island-icon" id="btn-voltar-ilha" title="Voltar">
-              <span class="material-symbols-rounded">arrow_back_ios_new</span>
-            </button>
-
+            <button class="island-icon" id="btn-voltar-ilha"><span class="material-symbols-rounded">arrow_back_ios_new</span></button>
             <div class="island-center">
               <span class="island-title" id="nome-lista-ilha">Carregando...</span>
               <span class="island-total" id="total-lista-ilha">R$ 0.00</span>
             </div>
-
             <div class="island-actions">
-              <button class="island-icon primary" id="btn-add-item" title="Adicionar Manual">
-                <span class="material-symbols-rounded">add</span>
-              </button>
-              
-              <label class="island-icon primary camera-label" title="Ler Etiqueta">
-                <input type="file" accept="image/*" capture="environment" id="input-camera" style="display: none;">
-                <span class="material-symbols-rounded">photo_camera</span>
-              </label>
-              
-              <button class="island-icon secondary" id="btn-sincronizar" title="Sincronizar Nuvem">
-                <span class="material-symbols-rounded">cloud_upload</span>
-              </button>
+              <button class="island-icon primary" id="btn-add-item"><span class="material-symbols-rounded">add</span></button>
+              <!-- Botão do WhatsApp -->
+              <button class="island-icon secondary" id="btn-whatsapp" title="Exportar para WhatsApp"><span class="material-symbols-rounded">share</span></button>
+              <button class="island-icon secondary" id="btn-sincronizar"><span class="material-symbols-rounded">sync</span></button>
             </div>
           </div>
         </div>
@@ -56,105 +43,58 @@
             <span class="material-symbols-rounded">search</span>
             <input type="text" id="input-busca" placeholder="Buscar na lista...">
           </div>
-
-          <p class="empty-state" id="empty-state-itens">
-            Sua lista está vazia. Adicione um produto manualmente ou escaneie!
-          </p>
-
+          <p class="empty-state" id="empty-state-itens">Sua lista está vazia. Adicione um produto!</p>
           <div class="itens-list" id="itens-container"></div>
         </div>
       </main>
     </div>
 
-    <!-- Modal de Novo Produto -->
+    <!-- Modais e Calculadora Ocultos -->
     <div class="modal-overlay" id="modal-item" style="display: none;">
       <div class="modal-content">
         <h3>Adicionar Produto</h3>
-        <div class="form-group">
-          <label>Nome do Produto</label>
-          <input type="text" id="input-nome-item" placeholder="Ex: Arroz 5kg" required>
-        </div>
+        <div class="form-group"><label>Nome</label><input type="text" id="input-nome-item" required></div>
         <div class="form-row" style="display: flex; gap: 1rem;">
-          <div class="form-group" style="flex: 1;">
-            <label>Quantidade</label>
-            <input type="number" id="input-qtd-item" min="1" value="1">
-          </div>
-          <div class="form-group" style="flex: 1;">
-            <label>Preço Unitário (R$)</label>
-            <input type="number" id="input-preco-item" placeholder="0.00" step="0.01">
-          </div>
+          <div class="form-group" style="flex: 1;"><label>Quantidade</label><input type="number" id="input-qtd-item" min="1" value="1"></div>
+          <div class="form-group" style="flex: 1;"><label>Preço (R$)</label><input type="number" id="input-preco-item"></div>
         </div>
-        <div class="modal-actions">
-          <button class="btn-cancel" id="btn-fechar-modal-item">Cancelar</button>
-          <button class="btn-primary" id="btn-salvar-item">Salvar</button>
-        </div>
+        <div class="modal-actions"><button class="btn-cancel" id="btn-fechar-modal-item">Cancelar</button><button class="btn-primary" id="btn-salvar-item">Salvar</button></div>
       </div>
     </div>
 
-    <!-- ... Botão da Câmera (já existente) ... -->
-<label class="island-icon primary camera-label" title="Ler Etiqueta">
-  <input type="file" accept="image/*" capture="environment" id="input-camera" style="display: none;">
-  <span class="material-symbols-rounded">photo_camera</span>
-</label>
-
-<!-- 👇 NOVO: Botão de Importar TXT/Excel 👇 -->
-<label class="island-icon secondary" title="Importar Planilha ou Texto">
-  <input type="file" accept=".txt, .csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" id="input-importar" style="display: none;">
-  <span class="material-symbols-rounded">upload_file</span>
-</label>
-
-<!-- 👇 Botão Flutuante da Calculadora 👇 -->
-    <button class="fab-calculator" id="btn-open-calc" title="Abrir Calculadora">
-      <span class="material-symbols-rounded">calculate</span>
-    </button>
-
-    <!-- 👇 Modal / Bottom Sheet da Calculadora 👇 -->
+    <button class="fab-calculator" id="btn-open-calc"><span class="material-symbols-rounded">calculate</span></button>
     <div class="modal-overlay" id="modal-calculadora" style="display: none; align-items: flex-end;">
       <div class="calc-container">
         <div class="calc-header">
           <h3 style="color: var(--primary-color);">Calculadora</h3>
-          <button class="btn-icon" id="btn-close-calc" style="color: var(--text-muted);">
-            <span class="material-symbols-rounded">close</span>
-          </button>
+          <button class="btn-icon" id="btn-close-calc" style="color: var(--text-muted);"><span class="material-symbols-rounded">close</span></button>
         </div>
-        
         <div class="calc-display" id="calc-display">0</div>
-        
         <div class="calc-grid">
           <button class="calc-btn btn-clear" data-action="clear">C</button>
           <button class="calc-btn btn-op" data-action="delete">⌫</button>
           <button class="calc-btn btn-op" data-action="operator" data-val="/">÷</button>
           <button class="calc-btn btn-op" data-action="operator" data-val="*">×</button>
-
           <button class="calc-btn" data-action="number" data-val="7">7</button>
           <button class="calc-btn" data-action="number" data-val="8">8</button>
           <button class="calc-btn" data-action="number" data-val="9">9</button>
           <button class="calc-btn btn-op" data-action="operator" data-val="-">-</button>
-
           <button class="calc-btn" data-action="number" data-val="4">4</button>
           <button class="calc-btn" data-action="number" data-val="5">5</button>
           <button class="calc-btn" data-action="number" data-val="6">6</button>
           <button class="calc-btn btn-op" data-action="operator" data-val="+">+</button>
-
           <button class="calc-btn" data-action="number" data-val="1">1</button>
           <button class="calc-btn" data-action="number" data-val="2">2</button>
           <button class="calc-btn" data-action="number" data-val="3">3</button>
           <button class="calc-btn btn-equal" data-action="calculate" style="grid-row: span 2;">=</button>
-
           <button class="calc-btn" data-action="number" data-val="0" style="grid-column: span 2;">0</button>
           <button class="calc-btn" data-action="number" data-val=".">.</button>
         </div>
-        
-        <!-- Botão para enviar o valor para o produto -->
-        <button class="btn-primary" id="btn-usar-valor" style="width: 100%; margin-top: 1.5rem; background-color: var(--success); color: #000;">
-          Usar Valor (R$)
-        </button>
+        <button class="btn-primary" id="btn-usar-valor" style="width: 100%; margin-top: 1.5rem; background-color: var(--success); color: #000;">Usar Valor (R$)</button>
       </div>
     </div>
-
+    
     <div id="toast-container"></div>
-
-<!-- ... Botão de Sincronizar Nuvem (já existente) ... -->
     <script type="module" src="/src/lista.js"></script>
   </body>
 </html>
