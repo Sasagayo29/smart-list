@@ -25,24 +25,43 @@
 .item-subtotal { font-size: 1rem; font-weight: 600; background-color: var(--secondary-color); padding: 0.5rem 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); }
 .btn-icon { background: transparent; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; transition: var(--transition); }
 
-/* Calculadora Flutuante */
 /* =========================================
-   TORRE DE BOTÕES FLUTUANTES (FABs)
+   MENU FLUTUANTE EXPANSÍVEL (FAB)
    ========================================= */
 .fab-container {
   position: fixed;
-  bottom: 2rem;
+  bottom: 3rem; /* Subimos a margem para fugir do rodapé! */
   right: 1.5rem;
   display: flex;
   flex-direction: column;
-  align-items: flex-end; /* Alinha todos pela direita */
+  align-items: center; /* Centraliza os botões */
   gap: 1rem;
-  z-index: 80;
+  z-index: 90;
+}
+
+.fab-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  align-items: center;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(20px) scale(0.9);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+/* Quando o contêiner recebe a classe .active, o menu aparece! */
+.fab-container.active .fab-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
 }
 
 .fab-action {
-  width: 50px;
-  height: 50px;
+  width: 48px; /* Botões do menu um pouco menores */
+  height: 48px;
   border-radius: var(--radius-full);
   border: none;
   display: flex;
@@ -54,36 +73,37 @@
   color: white;
 }
 
-.fab-action:hover {
-  transform: scale(1.1);
-}
+.fab-action span { font-size: 1.5rem; }
+.fab-action:hover { transform: scale(1.1); filter: brightness(1.2); }
 
-.fab-action span {
-  font-size: 1.6rem;
-}
-
-/* Cores específicas para cada ação */
+/* Cores do Menu */
 .fab-calc { background-color: var(--text-muted); } 
-.fab-cam { background-color: #f59e0b; cursor: pointer; } /* Laranja para a Câmera */
+.fab-cam { background-color: #f59e0b; cursor: pointer; } 
 .fab-mic { background-color: #8b5cf6; }
-.fab-add {
-  background-color: var(--primary-color); 
-  width: 65px; 
-  height: 65px; 
-}
-.fab-add span { font-size: 2.2rem; margin: 0; }
-
-/* Oculta o microfone se o navegador não suportar (controle via JS) */
+.fab-manual { background-color: var(--success); } /* Verde para escrita manual */
 .fab-mic[style*="display: none"] { display: none !important; }
-.calc-container { background: var(--bg-card); padding: 1.5rem; border-radius: var(--radius-lg) var(--radius-lg) 0 0; width: 100%; max-width: 100%; position: absolute; bottom: 0; animation: slideUp 0.3s ease-out; border-top: 1px solid var(--border-color); box-shadow: 0 -10px 40px rgba(0,0,0,0.5); }
-@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-.calc-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-.calc-display { background-color: var(--bg-main); color: var(--text-main); font-size: 2.5rem; text-align: right; padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; overflow-x: auto; white-space: nowrap; border: 1px solid var(--border-color); }
-.calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
-.calc-btn { background-color: var(--secondary-color); color: var(--text-main); border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 1.5rem; padding: 1rem 0; cursor: pointer; transition: var(--transition); }
-.btn-op { color: var(--primary-color); font-weight: bold; background-color: rgba(14, 165, 233, 0.05); }
-.btn-clear { color: var(--danger); font-weight: bold; background-color: rgba(244, 63, 94, 0.05); }
-.btn-equal { background-color: var(--primary-color); color: white; border: none; }
+
+/* Botão Mestre (+) */
+.fab-master {
+  background-color: var(--primary-color); 
+  width: 60px; 
+  height: 60px; 
+  z-index: 2;
+}
+.fab-master span { 
+  font-size: 2.2rem; 
+  margin: 0; 
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+}
+
+/* Gira o (+) para um (x) e muda de cor quando aberto */
+.fab-container.active .fab-master { background-color: var(--danger); }
+.fab-container.active .fab-master span { transform: rotate(135deg); }
+
+@media (max-width: 768px) {
+  .fab-container { bottom: 2rem; right: 1rem; }
+  .fab-master { width: 56px; height: 56px; }
+}
 
 /* 📱 RESPONSIVIDADE NATIVA PARA A TELA DE ITENS */
 @media (max-width: 768px) {

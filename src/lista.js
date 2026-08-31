@@ -289,4 +289,32 @@ if (inputCamera) {
   });
 }
 
+// 🔘 MÓDULO DO MENU FAB EXPANSÍVEL
+const fabContainer = document.getElementById('fab-container');
+const btnFabToggle = document.getElementById('btn-fab-toggle');
+
+// Abre/Fecha o menu ao clicar no botão Mestre
+if (btnFabToggle) {
+  btnFabToggle.addEventListener('click', (e) => {
+    e.stopPropagation(); // Evita que o clique feche na mesma hora
+    fabContainer.classList.toggle('active');
+  });
+}
+
+// Fecha o menu se o usuário clicar fora dele
+document.addEventListener('click', (e) => {
+  if (fabContainer && fabContainer.classList.contains('active')) {
+    if (!fabContainer.contains(e.target)) {
+      fabContainer.classList.remove('active');
+    }
+  }
+});
+
+// Fecha o menu automaticamente quando uma ação de dentro dele é escolhida
+document.querySelectorAll('.fab-menu .fab-action').forEach(btn => {
+  btn.addEventListener('click', () => {
+    fabContainer.classList.remove('active');
+  });
+});
+
 carregarDados();

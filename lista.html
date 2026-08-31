@@ -67,25 +67,35 @@
       </div>
     </div>
 
-    <!-- 👇 TORRE DE AÇÕES FLUTUANTES 👇 -->
-    <div class="fab-container">
-      <button class="fab-action fab-calc" id="btn-open-calc" title="Calculadora">
-        <span class="material-symbols-rounded">calculate</span>
-      </button>
+    <!-- 👇 MENU FLUTUANTE EXPANSÍVEL (FAB) 👇 -->
+    <div class="fab-container" id="fab-container">
       
-      <!-- O Scanner voltou para o jogo! -->
-      <label class="fab-action fab-cam" title="Ler Etiqueta">
-        <input type="file" accept="image/*" capture="environment" id="input-camera" style="display: none;">
-        <span class="material-symbols-rounded">photo_camera</span>
-      </label>
+      <!-- Ações secundárias (Escondidas por padrão) -->
+      <div class="fab-menu">
+        <button class="fab-action fab-calc" id="btn-open-calc" title="Calculadora">
+          <span class="material-symbols-rounded">calculate</span>
+        </button>
+        
+        <label class="fab-action fab-cam" title="Ler Etiqueta">
+          <input type="file" accept="image/*" capture="environment" id="input-camera" style="display: none;">
+          <span class="material-symbols-rounded">photo_camera</span>
+        </label>
 
-      <button class="fab-action fab-mic" id="btn-mic" title="Comando de Voz">
-        <span class="material-symbols-rounded">mic</span>
-      </button>
-      
-      <button class="fab-action fab-add" id="btn-add-item" title="Adicionar Manual">
+        <button class="fab-action fab-mic" id="btn-mic" title="Comando de Voz">
+          <span class="material-symbols-rounded">mic</span>
+        </button>
+        
+        <!-- O botão de digitar manualmente entrou para o menu -->
+        <button class="fab-action fab-manual" id="btn-add-item" title="Digitar Manualmente">
+          <span class="material-symbols-rounded">edit_document</span>
+        </button>
+      </div>
+
+      <!-- Botão Mestre (Gatilho) -->
+      <button class="fab-action fab-master" id="btn-fab-toggle" title="Menu de Ações">
         <span class="material-symbols-rounded">add</span>
       </button>
+      
     </div>
     <div class="modal-overlay" id="modal-calculadora" style="display: none; align-items: flex-end;">
       <div class="calc-container">
