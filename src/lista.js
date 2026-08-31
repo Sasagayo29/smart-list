@@ -40,8 +40,9 @@ async function carregarDados() {
   const itens = await db.itens.where('lista_id').equals(listaId).toArray();
   
   // Atualiza a Ilha Dinâmica
-  const total = itens.reduce((acc, item) => acc + (item.quantidade * item.preco_unitario), 0);
-  totalListaIlha.textContent = `R$ ${total.toFixed(2)}`;
+// Atualiza a Ilha Dinâmica com conversão segura
+  const total = itens.reduce((acc, item) => acc + (item.quantidade * (parseFloat(item.preco_unitario) || 0)), 0);
+    totalListaIlha.textContent = `R$ ${total.toFixed(2)}`;
 
   // Controle de exibição (vazio ou com itens)
   itensContainer.innerHTML = '';
@@ -62,14 +63,16 @@ async function carregarDados() {
 function renderizarItens(itensArray) {
   itensContainer.innerHTML = '';
   itensArray.forEach(item => {
-    const subtotal = item.quantidade * item.preco_unitario;
+    // CORREÇÃO: Converte o preço para número antes da matemática
+    const preco = parseFloat(item.preco_unitario) || 0;
+    const subtotal = item.quantidade * preco;
     
     const card = document.createElement('div');
     card.className = 'item-card';
     card.innerHTML = `
       <div class="item-info">
         <h4>${item.nome}</h4>
-        <span class="item-price">R$ ${item.preco_unitario.toFixed(2)} x ${item.quantidade}</span>
+        <span class="item-price">R$ ${preco.toFixed(2)} x ${item.quantidade}</span>
       </div>
       <div style="display: flex; gap: 1rem; align-items: center;">
         <div class="item-subtotal">R$ ${subtotal.toFixed(2)}</div>
@@ -81,7 +84,6 @@ function renderizarItens(itensArray) {
     itensContainer.appendChild(card);
   });
 
-  // Adiciona evento de exclusão aos botões que acabaram de ser criados
   document.querySelectorAll('.btn-excluir').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       const id = e.currentTarget.getAttribute('data-id');
@@ -169,9 +171,10 @@ btnSincronizar.addEventListener('click', async () => {
     const listaNuvem = {
       id: listaLocal.id,
       nome: listaLocal.nome,
-      orcamento: listaLocal.orcamento,
+      orcamento: parseFloat(listaLocal.orcamento) || 0,
       categoria: listaLocal.categoria,
-      user_id: userId // 👈 Aqui resolvemos aquele erro antigo do 'local'!
+      created_at: listaLocal.created_at, // Adicione esta linha para salvar a data!
+      user_id: userId 
     };
 
     // 3. Prepara os itens

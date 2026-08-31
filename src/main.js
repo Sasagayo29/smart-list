@@ -88,21 +88,23 @@ async function carregarListas() {
   emptyState.style.display = 'none';
 
   for (const lista of listas) {
-    const dataFormatada = new Date(lista.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+    // CORREÇÃO 1: Garante que o orçamento será sempre um Número
+    const orcamento = parseFloat(lista.orcamento) || 0;
     
-    // Busca as configurações da categoria
+    // CORREÇÃO 2: Garante que a data não quebre se vier vazia
+    const dataFormatada = new Date(lista.created_at || new Date()).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+    
     const catDetalhes = categoriasConfig.find(c => c.id === lista.categoria) || categoriasConfig[3];
     
-    // 🧮 CÁLCULO DE PROGRESSO (Busca os itens desta lista e soma)
     const itensDaLista = await db.itens.where('lista_id').equals(lista.id).toArray();
-    const gastoTotal = itensDaLista.reduce((acc, item) => acc + (item.quantidade * item.preco_unitario), 0);
     
-    // Calcula a porcentagem e define a cor (fica vermelho se passar de 90%)
-    let porcentagem = lista.orcamento > 0 ? (gastoTotal / lista.orcamento) * 100 : 0;
+    // CORREÇÃO 3: Garante que o preço unitário seja Número ao somar
+    const gastoTotal = itensDaLista.reduce((acc, item) => acc + (item.quantidade * (parseFloat(item.preco_unitario) || 0)), 0);
+    
+    let porcentagem = orcamento > 0 ? (gastoTotal / orcamento) * 100 : 0;
     if (porcentagem > 100) porcentagem = 100;
     const corBarra = porcentagem > 90 ? 'var(--danger)' : catDetalhes.cor;
 
-    // Monta o Cartão Premium
     const card = document.createElement('div');
     card.className = 'lista-card';
     card.innerHTML = `
@@ -121,7 +123,7 @@ async function carregarListas() {
       <div class="progress-container">
         <div class="progress-labels">
           <span>R$ ${gastoTotal.toFixed(2)}</span>
-          <span>R$ ${lista.orcamento.toFixed(2)}</span>
+          <span>R$ ${orcamento.toFixed(2)}</span>
         </div>
         <div class="progress-bar-bg">
           <div class="progress-fill" style="width: ${porcentagem}%; background-color: ${corBarra};"></div>
