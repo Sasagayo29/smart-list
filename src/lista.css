@@ -112,10 +112,14 @@
   .item-card { flex-direction: column; align-items: flex-start; gap: 1rem; }
   .item-card > div:last-child { width: 100%; justify-content: space-between; }
   
-  /* Sobe a calculadora para não ficar atrás do menu inferior */
-  /* Ajuste responsivo da Torre de Ações */
-  .fab-container { bottom: 1.5rem; right: 1rem; }
-  .fab-add { width: 60px; height: 60px; }
+  /* 🌟 CORREÇÃO: Foge do menu inferior e ganha prioridade visual 🌟 */
+  .fab-container { 
+    bottom: 90px; /* Sobe o botão para cima do rodapé de 70px */
+    right: 1rem; 
+    z-index: 110; /* Garante que ficará acima de tudo */
+  }
+  
+  .fab-master { width: 56px; height: 56px; }
   .calc-container { padding: 1.25rem 1rem 2rem 1rem; }
   .calc-btn { padding: 0.75rem 0; font-size: 1.25rem; }
 }
