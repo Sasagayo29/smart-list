@@ -13,7 +13,10 @@ const emptyState = document.getElementById('empty-state-itens');
 const searchContainer = document.getElementById('search-container');
 const inputBusca = document.getElementById('input-busca');
 const modalItem = document.getElementById('modal-item');
+const tituloModalItem = modalItem.querySelector('h3'); // Seleciona o título do modal
 const inputs = { nome: document.getElementById('input-nome-item'), qtd: document.getElementById('input-qtd-item'), preco: document.getElementById('input-preco-item') };
+
+let itemEmEdicaoId = null; // Variável para rastrear se estamos editando um item
 
 document.getElementById('btn-voltar-nav').addEventListener('click', () => window.location.href = '/');
 document.getElementById('btn-voltar-ilha').addEventListener('click', () => window.location.href = '/');
@@ -46,6 +49,7 @@ function renderizarItens(itensArray) {
     card.className = 'item-card';
     if (comprado) card.style.opacity = '0.5';
 
+    // Adicionado o botão de editar (lápis) ao lado do botão de excluir
     card.innerHTML = `
       <div style="display: flex; align-items: center; gap: 1rem; flex: 1;">
         <button class="btn-check" data-id="${item.id}" style="background:none; border:none; color: ${comprado ? 'var(--success)' : 'var(--text-muted)'}; cursor:pointer; padding: 0;">
@@ -56,14 +60,16 @@ function renderizarItens(itensArray) {
           <span class="item-price">R$ ${preco.toFixed(2)} x ${item.quantidade}</span>
         </div>
       </div>
-      <div style="display: flex; gap: 1rem; align-items: center;">
+      <div style="display: flex; gap: 0.5rem; align-items: center;">
         <div class="item-subtotal" style="${comprado ? 'background-color: transparent; border-color: transparent;' : ''}">R$ ${subtotal.toFixed(2)}</div>
-        <button class="btn-icon btn-excluir" data-id="${item.id}" style="color: var(--danger);"><span class="material-symbols-rounded">delete</span></button>
+        <button class="btn-icon btn-editar" data-id="${item.id}" style="color: var(--primary-color);" title="Editar"><span class="material-symbols-rounded">edit</span></button>
+        <button class="btn-icon btn-excluir" data-id="${item.id}" style="color: var(--danger);" title="Excluir"><span class="material-symbols-rounded">delete</span></button>
       </div>
     `;
     itensContainer.appendChild(card);
   });
 
+  // Evento de Check (Comprado)
   document.querySelectorAll('.btn-check').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       const id = e.currentTarget.getAttribute('data-id');
@@ -73,6 +79,24 @@ function renderizarItens(itensArray) {
     });
   });
 
+  // Evento de Editar
+  document.querySelectorAll('.btn-editar').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const id = e.currentTarget.getAttribute('data-id');
+      const item = await db.itens.get(id);
+      
+      if (item) {
+        itemEmEdicaoId = item.id;
+        tituloModalItem.textContent = 'Editar Produto';
+        inputs.nome.value = item.nome;
+        inputs.qtd.value = item.quantidade;
+        inputs.preco.value = parseFloat(item.preco_unitario).toFixed(2);
+        modalItem.style.display = 'flex';
+      }
+    });
+  });
+
+  // Evento de Excluir
   document.querySelectorAll('.btn-excluir').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       const id = e.currentTarget.getAttribute('data-id');
@@ -81,15 +105,44 @@ function renderizarItens(itensArray) {
   });
 }
 
-document.getElementById('btn-add-item').addEventListener('click', () => { inputs.nome.value = ''; inputs.qtd.value = 1; inputs.preco.value = ''; modalItem.style.display = 'flex'; });
-document.getElementById('btn-fechar-modal-item').addEventListener('click', () => modalItem.style.display = 'none');
+// Botão Adicionar Item (Garante que vai abrir limpo para criar novo)
+document.getElementById('btn-add-item').addEventListener('click', () => { 
+  itemEmEdicaoId = null;
+  tituloModalItem.textContent = 'Adicionar Produto';
+  inputs.nome.value = ''; inputs.qtd.value = 1; inputs.preco.value = ''; 
+  modalItem.style.display = 'flex'; 
+});
 
+// Fechar Modal (Limpa a variável de edição)
+document.getElementById('btn-fechar-modal-item').addEventListener('click', () => {
+  modalItem.style.display = 'none';
+  itemEmEdicaoId = null;
+});
+
+// Botão Salvar (Agora serve tanto para Criar quanto para Atualizar)
 document.getElementById('btn-salvar-item').addEventListener('click', async () => {
   const nome = inputs.nome.value;
   if (!nome) return mostrarToast('Insira o nome do produto!', 'error');
-  await db.itens.add({ id: generateUUID(), lista_id: listaId, nome, quantidade: parseInt(inputs.qtd.value) || 1, preco_unitario: parseFloat(inputs.preco.value) || 0, comprado: false, user_id: 'local' });
+
+  const qtd = parseInt(inputs.qtd.value) || 1;
+  const preco = parseFloat(inputs.preco.value) || 0;
+
+  if (itemEmEdicaoId) {
+    // Modo Edição
+    await db.itens.update(itemEmEdicaoId, {
+      nome: nome,
+      quantidade: qtd,
+      preco_unitario: preco
+    });
+    mostrarToast('Produto atualizado!', 'success');
+  } else {
+    // Modo Criação
+    await db.itens.add({ id: generateUUID(), lista_id: listaId, nome, quantidade: qtd, preco_unitario: preco, comprado: false, user_id: 'local' });
+    mostrarToast('Produto adicionado!', 'success');
+  }
+
   modalItem.style.display = 'none';
-  mostrarToast('Produto adicionado!', 'success');
+  itemEmEdicaoId = null;
   carregarDados();
 });
 
@@ -174,7 +227,13 @@ document.getElementById('btn-usar-valor').addEventListener('click', () => {
   const valorCalculado = parseFloat(calcDisplay.textContent);
   if (!isNaN(valorCalculado) && valorCalculado > 0) {
     modalCalculadora.style.display = 'none';
-    inputs.nome.value = ''; inputs.qtd.value = 1; inputs.preco.value = valorCalculado.toFixed(2);
+    
+    // Se a calculadora for acionada, ela abre o modal para adicionar (ou atualizar se estivesse editando algo, mas focamos em adicionar rápido)
+    tituloModalItem.textContent = itemEmEdicaoId ? 'Editar Produto' : 'Adicionar Produto';
+    if (!itemEmEdicaoId) inputs.nome.value = ''; // Limpa o nome se for novo, mantém se for edição
+    inputs.qtd.value = 1; 
+    inputs.preco.value = valorCalculado.toFixed(2);
+    
     modalItem.style.display = 'flex';
   } else { mostrarToast('Calcule um valor válido!', 'error'); }
 });
