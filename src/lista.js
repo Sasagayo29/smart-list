@@ -51,19 +51,31 @@ function renderizarItens(itensArray) {
 
     // Adicionado o botão de editar (lápis) ao lado do botão de excluir
     card.innerHTML = `
-      <div style="display: flex; align-items: center; gap: 1rem; flex: 1;">
+      <div style="display: flex; align-items: center; gap: 1rem; width: 100%;">
         <button class="btn-check" data-id="${item.id}" style="background:none; border:none; color: ${comprado ? 'var(--success)' : 'var(--text-muted)'}; cursor:pointer; padding: 0;">
           <span class="material-symbols-rounded" style="font-size: 1.8rem;">${comprado ? 'check_circle' : 'radio_button_unchecked'}</span>
         </button>
-        <div class="item-info">
+        
+        <div class="item-info" style="flex: 1;">
           <h4 style="${comprado ? 'text-decoration: line-through;' : ''}">${item.nome}</h4>
           <span class="item-price">R$ ${preco.toFixed(2)} x ${item.quantidade}</span>
         </div>
       </div>
-      <div style="display: flex; gap: 0.5rem; align-items: center;">
-        <div class="item-subtotal" style="${comprado ? 'background-color: transparent; border-color: transparent;' : ''}">R$ ${subtotal.toFixed(2)}</div>
-        <button class="btn-icon btn-editar" data-id="${item.id}" style="color: var(--primary-color);" title="Editar"><span class="material-symbols-rounded">edit</span></button>
-        <button class="btn-icon btn-excluir" data-id="${item.id}" style="color: var(--danger);" title="Excluir"><span class="material-symbols-rounded">delete</span></button>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin-top: 0.75rem;">
+        <div class="item-subtotal" style="${comprado ? 'background-color: transparent; border-color: transparent;' : ''}">
+          R$ ${subtotal.toFixed(2)}
+        </div>
+        
+        <!-- Novo grupo de pílulas organizadas -->
+        <div class="item-actions-group">
+          <button class="btn-action-pill edit btn-editar" data-id="${item.id}" title="Editar">
+            <span class="material-symbols-rounded">edit</span>
+          </button>
+          <button class="btn-action-pill delete btn-excluir" data-id="${item.id}" title="Excluir">
+            <span class="material-symbols-rounded">delete</span>
+          </button>
+        </div>
       </div>
     `;
     itensContainer.appendChild(card);

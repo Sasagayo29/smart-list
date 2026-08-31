@@ -46,3 +46,47 @@
   .calc-container { padding: 1.25rem 1rem 2rem 1rem; }
   .calc-btn { padding: 0.75rem 0; font-size: 1.25rem; }
 }
+
+/* =========================================
+   PÍLULAS DE AÇÃO (EDITAR E DELETAR)
+   ========================================= */
+.item-actions-group {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.btn-action-pill {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: var(--transition);
+  border: 1px solid transparent;
+}
+
+.btn-action-pill span {
+  font-size: 1.1rem;
+}
+
+.btn-action-pill:hover {
+  transform: scale(1.05);
+  filter: brightness(1.2);
+}
+
+/* Pílula de Edição (Azul) */
+.btn-action-pill.edit {
+  color: var(--primary-color);
+  background-color: rgba(14, 165, 233, 0.1);
+  border-color: rgba(14, 165, 233, 0.2);
+}
+
+/* Pílula de Exclusão (Vermelha) */
+.btn-action-pill.delete {
+  color: var(--danger);
+  background-color: rgba(244, 63, 94, 0.1);
+  border-color: rgba(244, 63, 94, 0.2);
+}
