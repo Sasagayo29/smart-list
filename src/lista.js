@@ -2,6 +2,32 @@ import { db, generateUUID } from './db.js';
 import { supabase } from './supabase.js'; // 👈 NOVA LINHA
 import * as XLSX from 'xlsx';
 
+// Função Global de Toast
+export function mostrarToast(mensagem, tipo = 'info') {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+
+  const toast = document.createElement('div');
+  toast.className = `toast ${tipo}`;
+  
+  // Define o ícone com base no tipo
+  let icone = 'info';
+  if (tipo === 'success') icone = 'check_circle';
+  if (tipo === 'error') icone = 'error';
+
+  toast.innerHTML = `
+    <span class="material-symbols-rounded toast-icon">${icone}</span>
+    <span>${mensagem}</span>
+  `;
+
+  container.appendChild(toast);
+
+  // Remove do DOM após a animação terminar (3 segundos)
+  setTimeout(() => {
+    toast.remove();
+  }, 3000);
+}
+
 // 1. Pega o ID da lista que está na URL (ex: lista.html?id=123)
 const urlParams = new URLSearchParams(window.location.search);
 const listaId = urlParams.get('id');
