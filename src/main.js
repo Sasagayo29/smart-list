@@ -151,35 +151,41 @@ async function carregarListas() {
     card.className = 'lista-card';
     
     // Adicionamos o botão de Editar junto do Clonar e Excluir
+    // 🌟 NOVO LAYOUT DO CARTÃO DE LISTA (Separado em 3 sessões limpas) 🌟
     card.innerHTML = `
-      <div class="card-header" style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1rem; gap: 0.5rem;">
-        
-        <div style="display: flex; align-items: center; flex: 1; overflow: hidden; gap: 0.75rem;">
-          <div class="cat-icon-card" style="background-color: ${catDetalhes.cor}; margin: 0; flex-shrink: 0;">
-            <span class="material-symbols-rounded">${catDetalhes.icone}</span>
-          </div>
-          <div style="overflow: hidden;">
-            <h3 style="margin: 0; font-size: 1.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${lista.nome}</h3>
-            <span style="color: var(--text-muted); font-size: 0.8rem;">${dataFormatada}</span>
-          </div>
+      <!-- 1. CABEÇALHO: Ícone e Título (Espaço 100% livre) -->
+      <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem;">
+        <div class="cat-icon-card" style="background-color: ${catDetalhes.cor}; margin: 0; flex-shrink: 0; width: 48px; height: 48px; border-radius: 12px;">
+          <span class="material-symbols-rounded" style="font-size: 1.8rem;">${catDetalhes.icone}</span>
         </div>
-
-        <div style="display: flex; gap: 0.25rem; flex-shrink: 0; z-index: 10;">
-           <button class="btn-icon btn-editar-lista" data-id="${lista.id}" style="color: var(--primary-color);" title="Editar">
-             <span class="material-symbols-rounded" style="font-size: 1.4rem;">edit</span>
-           </button>
-           <button class="btn-icon btn-clonar" data-id="${lista.id}" style="color: var(--text-muted);" title="Duplicar">
-             <span class="material-symbols-rounded" style="font-size: 1.4rem;">content_copy</span>
-           </button>
-           <button class="btn-icon btn-excluir-lista" data-id="${lista.id}" style="color: var(--danger);" title="Excluir">
-             <span class="material-symbols-rounded" style="font-size: 1.4rem;">delete</span>
-           </button>
+        <div style="overflow: hidden; flex: 1;">
+          <h3 style="margin: 0 0 0.2rem 0; font-size: 1.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-main);">${lista.nome}</h3>
+          <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 500;">${dataFormatada}</span>
         </div>
       </div>
 
-      <div class="progress-container">
-        <div class="progress-labels"><span>R$ ${gastoTotal.toFixed(2)}</span><span>R$ ${orcamento.toFixed(2)}</span></div>
-        <div class="progress-bar-bg"><div class="progress-fill" style="width: ${porcentagem}%; background-color: ${corBarra};"></div></div>
+      <!-- 2. CORPO: Barra de Progresso e Valores -->
+      <div class="progress-container" style="margin-top: 0; margin-bottom: 1.25rem;">
+        <div class="progress-labels">
+          <span style="font-weight: 700; color: var(--text-main);">R$ ${gastoTotal.toFixed(2)}</span>
+          <span>R$ ${orcamento.toFixed(2)}</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-fill" style="width: ${porcentagem}%; background-color: ${corBarra};"></div>
+        </div>
+      </div>
+
+      <!-- 3. RODAPÉ: Botões de Ação (Abaixo de uma linha suave) -->
+      <div style="display: flex; justify-content: flex-end; align-items: center; gap: 0.5rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+         <button class="btn-icon btn-editar-lista" data-id="${lista.id}" style="color: var(--primary-color); width: 38px; height: 38px;" title="Editar">
+           <span class="material-symbols-rounded" style="font-size: 1.3rem;">edit</span>
+         </button>
+         <button class="btn-icon btn-clonar" data-id="${lista.id}" style="color: var(--text-muted); width: 38px; height: 38px;" title="Duplicar">
+           <span class="material-symbols-rounded" style="font-size: 1.3rem;">content_copy</span>
+         </button>
+         <button class="btn-icon btn-excluir-lista" data-id="${lista.id}" style="color: var(--danger); width: 38px; height: 38px;" title="Excluir">
+           <span class="material-symbols-rounded" style="font-size: 1.3rem;">delete</span>
+         </button>
       </div>
     `;
       
