@@ -289,19 +289,19 @@ if (inputCamera) {
   });
 }
 
-// 🔘 MÓDULO DO MENU FAB EXPANSÍVEL
+// 🔘 MÓDULO DO MENU FAB EXPANSÍVEL (ATUADOR)
 const fabContainer = document.getElementById('fab-container');
 const btnFabToggle = document.getElementById('btn-fab-toggle');
 
-// Abre/Fecha o menu ao clicar no botão Mestre
+// Abre/Fecha o menu ao clicar no botão Mestre (+)
 if (btnFabToggle) {
   btnFabToggle.addEventListener('click', (e) => {
-    e.stopPropagation(); // Evita que o clique feche na mesma hora
+    e.stopPropagation(); 
     fabContainer.classList.toggle('active');
   });
 }
 
-// Fecha o menu se o usuário clicar fora dele
+// Fecha o menu suavemente se o usuário clicar em qualquer outro lugar da tela
 document.addEventListener('click', (e) => {
   if (fabContainer && fabContainer.classList.contains('active')) {
     if (!fabContainer.contains(e.target)) {
@@ -310,11 +310,12 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// Fecha o menu automaticamente quando uma ação de dentro dele é escolhida
+// Fecha o menu automaticamente após você escolher uma opção
 document.querySelectorAll('.fab-menu .fab-action').forEach(btn => {
   btn.addEventListener('click', () => {
     fabContainer.classList.remove('active');
   });
 });
+
 
 carregarDados();
