@@ -158,7 +158,21 @@ function renderizarItens(itensArray) {
   document.querySelectorAll('.btn-excluir').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       if (confirm('Excluir este item?')) { 
-        await db.itens.delete(e.currentTarget.getAttribute('data-id')); 
+        const id = e.currentTarget.getAttribute('data-id');
+        
+        // 1. Apaga localmente
+        await db.itens.delete(id); 
+        
+        // 2. Apaga na nuvem simultaneamente
+        try {
+           const { data: { session } } = await supabase.auth.getSession();
+           if (session) {
+              await supabase.from('itens').delete().eq('id', id);
+           }
+        } catch (err) {
+           console.log('Sem internet para apagar na nuvem agora.');
+        }
+
         mostrarToast('Removido', 'success'); 
         carregarDados(); 
       }

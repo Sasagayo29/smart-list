@@ -222,14 +222,28 @@ async function carregarListas() {
     });
   });
 
-  // EVENTO DE EXCLUIR
+  // EVENTO DE EXCLUIR (Com Exclusão Simultânea na Nuvem)
   document.querySelectorAll('.btn-excluir-lista').forEach(btn => {
     btn.addEventListener('click', async (e) => {
        e.stopPropagation();
        if(confirm('Excluir esta lista e todos os seus produtos?')) {
           const id = e.currentTarget.getAttribute('data-id');
+          
+          // 1. Apaga do banco local (Celular)
           await db.itens.where('lista_id').equals(id).delete();
           await db.listas.delete(id);
+
+          // 2. Dispara o tiro na Nuvem (Supabase) na mesma hora!
+          try {
+             const { data: { session } } = await supabase.auth.getSession();
+             if (session) {
+                await supabase.from('itens').delete().eq('lista_id', id);
+                await supabase.from('listas').delete().eq('id', id);
+             }
+          } catch (err) {
+             console.log('Sem internet para apagar na nuvem agora.');
+          }
+
           mostrarToast('Lista excluída!', 'success');
           carregarListas();
        }
