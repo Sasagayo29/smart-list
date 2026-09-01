@@ -313,41 +313,108 @@ document.getElementById('btn-usar-valor').addEventListener('click', () => {
 });
 
 // ==========================================
-// 4. INTEGRAÇÕES: NUVEM E COMPARTILHAMENTO
+// INTEGRAÇÕES: NUVEM E COMPARTILHAMENTO
 // ==========================================
 document.getElementById('btn-sincronizar').addEventListener('click', async () => {
   const iconeSync = document.getElementById('btn-sincronizar').querySelector('span');
   try {
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return mostrarToast('Faça login!', 'error');
+    if (!session) return mostrarToast('Faça login para sincronizar!', 'error');
+    
     iconeSync.style.animation = 'spin 1s linear infinite';
     const userId = session.user.id;
+
+    // 1. ENVIA (PUSH) - Salva o que você fez neste celular na nuvem
     const listaLocal = await db.listas.get(listaId);
-    await supabase.from('listas').upsert({ ...listaLocal, orcamento: parseFloat(listaLocal.orcamento)||0, user_id: userId });
+    if (listaLocal) {
+      await supabase.from('listas').upsert({ ...listaLocal, orcamento: parseFloat(listaLocal.orcamento)||0, user_id: userId });
+    }
     
-    // Atualiza Upsert com UNIDADE
     const itensLocais = await db.itens.where('lista_id').equals(listaId).toArray();
-    if (itensLocais.length > 0) await supabase.from('itens').upsert(itensLocais.map(i => ({ ...i, preco_unitario: parseFloat(i.preco_unitario)||0, unidade: i.unidade || 'un', user_id: userId })));
-    mostrarToast('Sincronizado!', 'success');
-  } catch (error) { mostrarToast('Erro na nuvem.', 'error'); } 
-  finally { iconeSync.style.animation = ''; }
+    if (itensLocais.length > 0) {
+      await supabase.from('itens').upsert(itensLocais.map(i => ({ ...i, preco_unitario: parseFloat(i.preco_unitario)||0, unidade: i.unidade || 'un', user_id: userId })));
+    }
+
+    // 2. RECEBE (PULL) - Baixa as novidades que vieram do outro celular
+    const { data: itensNuvem, error } = await supabase.from('itens').select('*').eq('lista_id', listaId);
+    if (error) throw error;
+
+    if (itensNuvem) {
+      // Limpa os dados antigos da tela e insere os dados frescos e atualizados da nuvem
+      await db.itens.where('lista_id').equals(listaId).delete(); 
+      await db.itens.bulkAdd(itensNuvem); 
+    }
+
+    mostrarToast('Sincronizado com sucesso!', 'success');
+    carregarDados(); // Recarrega a tela para mostrar os itens do outro aparelho
+    
+  } catch (error) { 
+    mostrarToast('Erro ao comunicar com a nuvem.', 'error'); 
+  } finally { 
+    iconeSync.style.animation = ''; 
+  }
 });
 
-document.getElementById('btn-share').addEventListener('click', async () => {
-  const lista = await db.listas.get(listaId);
-  const itens = await db.itens.where('lista_id').equals(listaId).toArray();
-  if (itens.length === 0) return mostrarToast('Lista vazia!', 'error');
+// ==========================================
+// MÓDULOS DE COMPARTILHAMENTO E IMPORTAÇÃO
+// ==========================================
 
-  let texto = `🛒 *${lista.nome}*\n_Orçamento: R$ ${parseFloat(lista.orcamento).toFixed(2)}_\n\n`;
-  let total = 0;
-  itens.forEach(item => { 
-    total += item.quantidade * (parseFloat(item.preco_unitario)||0); 
-    // WhatsApp Export formatado com unidade
-    texto += `${item.comprado?'✅':'➖'} ${item.quantidade}${item.unidade||'un'} ${item.nome} - R$ ${(item.quantidade * (parseFloat(item.preco_unitario)||0)).toFixed(2)}\n`; 
+// 📁 MÓDULO DE IMPORTAÇÃO (Excel/TXT para DENTRO da lista)
+const inputImportar = document.getElementById('input-importar');
+if (inputImportar) {
+  inputImportar.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const extensao = file.name.split('.').pop().toLowerCase();
+
+    try {
+      if (extensao === 'txt' || extensao === 'csv') {
+        const texto = await file.text();
+        for (const linha of texto.split('\n')) {
+          if (linha.trim() === '') continue;
+          const partes = linha.split(',');
+          await db.itens.add({ id: generateUUID(), lista_id: listaId, nome: partes[0].trim(), quantidade: parseInt(partes[1]) || 1, preco_unitario: parseFloat(partes[2]) || 0, comprado: false, unidade: 'un', user_id: 'local' });
+        }
+      } else {
+        const buffer = await file.arrayBuffer();
+        const workbook = XLSX.read(buffer);
+        const dados = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+        for (const linha of dados) {
+          const nome = linha.Nome || linha.nome || linha.Produto || linha.produto;
+          if (!nome) continue; 
+          await db.itens.add({ id: generateUUID(), lista_id: listaId, nome: String(nome), quantidade: parseInt(linha.Qtd || linha.Quantidade || 1), preco_unitario: parseFloat(linha.Preco || linha.Valor || 0), comprado: false, unidade: linha.Unidade || 'un', user_id: 'local' });
+        }
+      }
+      mostrarToast('Itens mesclados com sucesso!', 'success');
+      carregarDados();
+    } catch (error) { mostrarToast('Erro ao importar arquivo', 'error'); }
+    e.target.value = ''; 
   });
-  texto += `\n💰 *Total Estimado: R$ ${total.toFixed(2)}*\n\n_Gerado via Smart List_`;
-  if (navigator.share) { try { await navigator.share({ title: `Smart List - ${lista.nome}`, text: texto }); } catch (err) {}
-  } else { window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank'); }
-});
+}
+
+// 📤 COMPARTILHAMENTO NATIVO / WHATSAPP
+const btnShare = document.getElementById('btn-share');
+if (btnShare) {
+  btnShare.addEventListener('click', async () => {
+    const lista = await db.listas.get(listaId);
+    const itens = await db.itens.where('lista_id').equals(listaId).toArray();
+    if (itens.length === 0) return mostrarToast('Lista vazia!', 'error');
+
+    let texto = `🛒 *${lista.nome}*\n_Orçamento: R$ ${parseFloat(lista.orcamento).toFixed(2)}_\n\n`;
+    let total = 0;
+    itens.forEach(item => { 
+      total += item.quantidade * (parseFloat(item.preco_unitario)||0); 
+      texto += `${item.comprado?'✅':'➖'} ${item.quantidade}${item.unidade||'un'} ${item.nome} - R$ ${(item.quantidade * (parseFloat(item.preco_unitario)||0)).toFixed(2)}\n`; 
+    });
+    texto += `\n💰 *Total Estimado: R$ ${total.toFixed(2)}*\n\n_Gerado via Smart List_`;
+
+    if (navigator.share) {
+      try { await navigator.share({ title: `Smart List - ${lista.nome}`, text: texto }); } 
+      catch (err) { console.log('Cancelado pelo usuário'); }
+    } else { 
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank'); 
+    }
+  });
+}
 
 carregarDados();
