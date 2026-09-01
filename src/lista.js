@@ -1,7 +1,7 @@
 import { db, generateUUID } from './db.js';
 import { supabase } from './supabase.js';
 import { mostrarToast } from './utils.js';
-import * as XLSX from 'xlsx'; // 👈 Importação para ler Excel
+import * as XLSX from 'xlsx'; 
 
 const urlParams = new URLSearchParams(window.location.search);
 const listaId = urlParams.get('id');
@@ -15,10 +15,17 @@ const searchContainer = document.getElementById('search-container');
 const inputBusca = document.getElementById('input-busca');
 const modalItem = document.getElementById('modal-item');
 const tituloModalItem = modalItem.querySelector('h3'); 
-const inputs = { nome: document.getElementById('input-nome-item'), qtd: document.getElementById('input-qtd-item'), preco: document.getElementById('input-preco-item') };
+const inputs = { 
+  nome: document.getElementById('input-nome-item'), 
+  qtd: document.getElementById('input-qtd-item'), 
+  preco: document.getElementById('input-preco-item') 
+};
 
 let itemEmEdicaoId = null; 
 
+// ==========================================
+// 1. NAVEGAÇÃO E DADOS BASE
+// ==========================================
 document.getElementById('btn-voltar-nav').addEventListener('click', () => window.location.href = '/');
 document.getElementById('btn-voltar-ilha').addEventListener('click', () => window.location.href = '/');
 
@@ -30,8 +37,13 @@ async function carregarDados() {
   totalListaIlha.textContent = `R$ ${total.toFixed(2)}`;
 
   itensContainer.innerHTML = '';
-  if (itens.length === 0) { emptyState.style.display = 'block'; searchContainer.style.display = 'none'; return; }
-  emptyState.style.display = 'none'; searchContainer.style.display = 'flex';
+  if (itens.length === 0) { 
+    emptyState.style.display = 'block'; 
+    searchContainer.style.display = 'none'; 
+    return; 
+  }
+  emptyState.style.display = 'none'; 
+  searchContainer.style.display = 'flex';
   renderizarItens(itens);
 }
 
@@ -82,8 +94,11 @@ function renderizarItens(itensArray) {
     btn.addEventListener('click', async (e) => {
       const item = await db.itens.get(e.currentTarget.getAttribute('data-id'));
       if (item) {
-        itemEmEdicaoId = item.id; tituloModalItem.textContent = 'Editar Produto';
-        inputs.nome.value = item.nome; inputs.qtd.value = item.quantidade; inputs.preco.value = parseFloat(item.preco_unitario).toFixed(2);
+        itemEmEdicaoId = item.id; 
+        tituloModalItem.textContent = 'Editar Produto';
+        inputs.nome.value = item.nome; 
+        inputs.qtd.value = item.quantidade; 
+        inputs.preco.value = parseFloat(item.preco_unitario).toFixed(2);
         modalItem.style.display = 'flex';
       }
     });
@@ -91,28 +106,101 @@ function renderizarItens(itensArray) {
 
   document.querySelectorAll('.btn-excluir').forEach(btn => {
     btn.addEventListener('click', async (e) => {
-      if (confirm('Excluir este item?')) { await db.itens.delete(e.currentTarget.getAttribute('data-id')); mostrarToast('Removido', 'success'); carregarDados(); }
+      if (confirm('Excluir este item?')) { 
+        await db.itens.delete(e.currentTarget.getAttribute('data-id')); 
+        mostrarToast('Removido', 'success'); 
+        carregarDados(); 
+      }
     });
   });
 }
 
-// 🎤 MÓDULO DE RECONHECIMENTO DE VOZ
+// Busca (Filtro)
+inputBusca.addEventListener('input', async (e) => {
+  const termo = e.target.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const todosItens = await db.itens.where('lista_id').equals(listaId).toArray();
+  renderizarItens(todosItens.filter(item => item.nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(termo)));
+});
+
+
+// ==========================================
+// 2. FUNÇÕES DE ADICIONAR E SALVAR ITEM
+// ==========================================
+
+// 👉 AQUI ESTÁ A ADIÇÃO MANUAL RECUPERADA!
+document.getElementById('btn-add-item').addEventListener('click', () => { 
+  itemEmEdicaoId = null; 
+  tituloModalItem.textContent = 'Adicionar Produto';
+  inputs.nome.value = ''; 
+  inputs.qtd.value = 1; 
+  inputs.preco.value = ''; 
+  modalItem.style.display = 'flex'; 
+});
+
+// Fechar Modal
+document.getElementById('btn-fechar-modal-item').addEventListener('click', () => {
+  modalItem.style.display = 'none';
+});
+
+// Salvar no Banco Local
+document.getElementById('btn-salvar-item').addEventListener('click', async () => {
+  const nome = inputs.nome.value;
+  if (!nome) return mostrarToast('Insira o nome!', 'error');
+  
+  if (itemEmEdicaoId) {
+    await db.itens.update(itemEmEdicaoId, { nome, quantidade: parseInt(inputs.qtd.value)||1, preco_unitario: parseFloat(inputs.preco.value)||0 });
+  } else {
+    await db.itens.add({ id: generateUUID(), lista_id: listaId, nome, quantidade: parseInt(inputs.qtd.value)||1, preco_unitario: parseFloat(inputs.preco.value)||0, comprado: false, user_id: 'local' });
+  }
+  
+  modalItem.style.display = 'none'; 
+  itemEmEdicaoId = null; 
+  carregarDados();
+});
+
+
+// ==========================================
+// 3. MENU EXPANSÍVEL (FAB) - ANIMAÇÕES
+// ==========================================
+const fabContainer = document.getElementById('fab-container');
+const btnFabToggle = document.getElementById('btn-fab-toggle');
+
+if (btnFabToggle) {
+  btnFabToggle.addEventListener('click', (e) => {
+    e.stopPropagation(); 
+    fabContainer.classList.toggle('active');
+  });
+}
+
+document.addEventListener('click', (e) => {
+  if (fabContainer && fabContainer.classList.contains('active') && !fabContainer.contains(e.target)) {
+    fabContainer.classList.remove('active');
+  }
+});
+
+document.querySelectorAll('.fab-menu .fab-action').forEach(btn => {
+  btn.addEventListener('click', () => fabContainer.classList.remove('active'));
+});
+
+
+// ==========================================
+// 4. MÓDULO DE VOZ E CÂMERA
+// ==========================================
 const btnMic = document.getElementById('btn-mic');
 if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   const recognition = new SpeechRecognition();
-  recognition.lang = 'pt-BR'; // Português do Brasil
+  recognition.lang = 'pt-BR'; 
   recognition.continuous = false;
 
   btnMic.addEventListener('click', () => {
     mostrarToast('Ouvindo... Fale o nome do produto', 'info');
-    btnMic.style.animation = 'spin 1s linear infinite'; // Dá um feedback visual
+    btnMic.style.animation = 'spin 1s linear infinite';
     recognition.start();
   });
 
   recognition.onresult = (event) => {
     const transcricao = event.results[0][0].transcript;
-    // Prepara o modal de adição com o nome falado!
     itemEmEdicaoId = null;
     tituloModalItem.textContent = 'Adicionar (Por Voz)';
     inputs.nome.value = transcricao.charAt(0).toUpperCase() + transcricao.slice(1);
@@ -125,10 +213,103 @@ if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
   recognition.onerror = () => { mostrarToast('Não entendi. Tente novamente.', 'error'); };
   recognition.onend = () => { btnMic.style.animation = ''; };
 } else {
-  btnMic.style.display = 'none'; // Esconde se o navegador não suportar (ex: Firefox antigo)
+  btnMic.style.display = 'none'; 
 }
 
-// 📁 MÓDULO DE IMPORTAÇÃO (Excel/TXT para DENTRO da lista)
+const inputCamera = document.getElementById('input-camera');
+if (inputCamera) {
+  inputCamera.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    mostrarToast('Processando imagem...', 'info');
+
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      const nomeIdentificado = prompt("Etiqueta lida! Confirme o nome do produto:", "Produto Escaneado");
+      if (nomeIdentificado) {
+        const precoIdentificado = parseFloat(prompt(`Qual o preço de ${nomeIdentificado}?`, "0.00")) || 0;
+        await db.itens.add({ id: generateUUID(), lista_id: listaId, nome: nomeIdentificado, quantidade: 1, preco_unitario: precoIdentificado, comprado: false, user_id: 'local' });
+        mostrarToast('Produto escaneado adicionado!', 'success');
+        carregarDados();
+      }
+    } catch (error) {
+      mostrarToast('Falha ao processar a imagem.', 'error');
+    } finally {
+      inputCamera.value = ''; 
+    }
+  });
+}
+
+
+// ==========================================
+// 5. CALCULADORA FLUTUANTE
+// ==========================================
+const modalCalculadora = document.getElementById('modal-calculadora');
+const calcDisplay = document.getElementById('calc-display');
+let expressaoCalc = '';
+
+document.getElementById('btn-open-calc').addEventListener('click', () => modalCalculadora.style.display = 'flex');
+document.getElementById('btn-close-calc').addEventListener('click', () => modalCalculadora.style.display = 'none');
+modalCalculadora.addEventListener('click', (e) => { if (e.target === modalCalculadora) modalCalculadora.style.display = 'none'; });
+
+document.querySelectorAll('.calc-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    const val = e.target.getAttribute('data-val');
+    const action = e.target.getAttribute('data-action');
+    if (action === 'number' || action === 'operator') {
+      if (calcDisplay.textContent === '0' && action !== 'operator' && val !== '.') expressaoCalc = val;
+      else expressaoCalc += val;
+      calcDisplay.textContent = expressaoCalc;
+    } else if (action === 'clear') { expressaoCalc = ''; calcDisplay.textContent = '0';
+    } else if (action === 'delete') { expressaoCalc = expressaoCalc.toString().slice(0, -1); calcDisplay.textContent = expressaoCalc || '0';
+    } else if (action === 'calculate') {
+      try { 
+        expressaoCalc = Number.isInteger(new Function('return ' + expressaoCalc)()) ? new Function('return ' + expressaoCalc)().toString() : new Function('return ' + expressaoCalc)().toFixed(2); 
+        calcDisplay.textContent = expressaoCalc; 
+      } 
+      catch (err) { calcDisplay.textContent = 'Erro'; expressaoCalc = ''; }
+    }
+  });
+});
+
+document.getElementById('btn-usar-valor').addEventListener('click', () => {
+  const valorCalculado = parseFloat(calcDisplay.textContent);
+  if (!isNaN(valorCalculado) && valorCalculado > 0) {
+    modalCalculadora.style.display = 'none';
+    tituloModalItem.textContent = itemEmEdicaoId ? 'Editar Produto' : 'Adicionar Produto';
+    if (!itemEmEdicaoId) inputs.nome.value = ''; 
+    inputs.qtd.value = 1; 
+    inputs.preco.value = valorCalculado.toFixed(2);
+    modalItem.style.display = 'flex';
+  } else { 
+    mostrarToast('Calcule um valor válido!', 'error'); 
+  }
+});
+
+
+// ==========================================
+// 6. INTEGRAÇÕES: NUVEM, IMPORTAÇÃO E SHARE
+// ==========================================
+const btnSincronizar = document.getElementById('btn-sincronizar');
+btnSincronizar.addEventListener('click', async () => {
+  const iconeSync = btnSincronizar.querySelector('span');
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return mostrarToast('Faça login para sincronizar!', 'error');
+
+    iconeSync.style.animation = 'spin 1s linear infinite';
+    const userId = session.user.id;
+    const listaLocal = await db.listas.get(listaId);
+    
+    await supabase.from('listas').upsert({ ...listaLocal, orcamento: parseFloat(listaLocal.orcamento)||0, user_id: userId });
+    const itensLocais = await db.itens.where('lista_id').equals(listaId).toArray();
+    if (itensLocais.length > 0) await supabase.from('itens').upsert(itensLocais.map(i => ({ ...i, preco_unitario: parseFloat(i.preco_unitario)||0, user_id: userId })));
+    mostrarToast('Sincronização concluída!', 'success');
+  } catch (error) { mostrarToast('Erro ao sincronizar.', 'error'); } 
+  finally { iconeSync.style.animation = ''; }
+});
+
 const inputImportar = document.getElementById('input-importar');
 inputImportar.addEventListener('change', async (e) => {
   const file = e.target.files[0];
@@ -156,30 +337,9 @@ inputImportar.addEventListener('change', async (e) => {
     mostrarToast('Itens mesclados com sucesso!', 'success');
     carregarDados();
   } catch (error) { mostrarToast('Erro ao importar arquivo', 'error'); }
-  e.target.value = ''; // Limpa o input
+  e.target.value = ''; 
 });
 
-document.getElementById('btn-add-item').addEventListener('click', () => { 
-  itemEmEdicaoId = null; tituloModalItem.textContent = 'Adicionar Produto';
-  inputs.nome.value = ''; inputs.qtd.value = 1; inputs.preco.value = ''; modalItem.style.display = 'flex'; 
-});
-document.getElementById('btn-fechar-modal-item').addEventListener('click', () => modalItem.style.display = 'none');
-
-document.getElementById('btn-salvar-item').addEventListener('click', async () => {
-  const nome = inputs.nome.value;
-  if (!nome) return mostrarToast('Insira o nome!', 'error');
-  if (itemEmEdicaoId) await db.itens.update(itemEmEdicaoId, { nome, quantidade: parseInt(inputs.qtd.value)||1, preco_unitario: parseFloat(inputs.preco.value)||0 });
-  else await db.itens.add({ id: generateUUID(), lista_id: listaId, nome, quantidade: parseInt(inputs.qtd.value)||1, preco_unitario: parseFloat(inputs.preco.value)||0, comprado: false, user_id: 'local' });
-  modalItem.style.display = 'none'; itemEmEdicaoId = null; carregarDados();
-});
-
-inputBusca.addEventListener('input', async (e) => {
-  const termo = e.target.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  const todosItens = await db.itens.where('lista_id').equals(listaId).toArray();
-  renderizarItens(todosItens.filter(item => item.nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(termo)));
-});
-
-// Compartilhar Nativo
 document.getElementById('btn-share').addEventListener('click', async () => {
   const lista = await db.listas.get(listaId);
   const itens = await db.itens.where('lista_id').equals(listaId).toArray();
@@ -196,126 +356,7 @@ document.getElementById('btn-share').addEventListener('click', async () => {
   } else { window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank'); }
 });
 
-const btnSincronizar = document.getElementById('btn-sincronizar');
-btnSincronizar.addEventListener('click', async () => {
-  const iconeSync = btnSincronizar.querySelector('span');
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return mostrarToast('Faça login para sincronizar!', 'error');
-
-    iconeSync.style.animation = 'spin 1s linear infinite';
-    const userId = session.user.id;
-    const listaLocal = await db.listas.get(listaId);
-    
-    await supabase.from('listas').upsert({ ...listaLocal, orcamento: parseFloat(listaLocal.orcamento)||0, user_id: userId });
-    const itensLocais = await db.itens.where('lista_id').equals(listaId).toArray();
-    if (itensLocais.length > 0) await supabase.from('itens').upsert(itensLocais.map(i => ({ ...i, preco_unitario: parseFloat(i.preco_unitario)||0, user_id: userId })));
-    mostrarToast('Sincronização concluída!', 'success');
-  } catch (error) { mostrarToast('Erro ao sincronizar.', 'error'); } 
-  finally { iconeSync.style.animation = ''; }
-});
-
-const modalCalculadora = document.getElementById('modal-calculadora');
-const calcDisplay = document.getElementById('calc-display');
-let expressaoCalc = '';
-
-document.getElementById('btn-open-calc').addEventListener('click', () => modalCalculadora.style.display = 'flex');
-document.getElementById('btn-close-calc').addEventListener('click', () => modalCalculadora.style.display = 'none');
-modalCalculadora.addEventListener('click', (e) => { if (e.target === modalCalculadora) modalCalculadora.style.display = 'none'; });
-
-document.querySelectorAll('.calc-btn').forEach(btn => {
-  btn.addEventListener('click', (e) => {
-    const val = e.target.getAttribute('data-val');
-    const action = e.target.getAttribute('data-action');
-    if (action === 'number' || action === 'operator') {
-      if (calcDisplay.textContent === '0' && action !== 'operator' && val !== '.') expressaoCalc = val;
-      else expressaoCalc += val;
-      calcDisplay.textContent = expressaoCalc;
-    } else if (action === 'clear') { expressaoCalc = ''; calcDisplay.textContent = '0';
-    } else if (action === 'delete') { expressaoCalc = expressaoCalc.toString().slice(0, -1); calcDisplay.textContent = expressaoCalc || '0';
-    } else if (action === 'calculate') {
-      try { expressaoCalc = Number.isInteger(new Function('return ' + expressaoCalc)()) ? new Function('return ' + expressaoCalc)().toString() : new Function('return ' + expressaoCalc)().toFixed(2); calcDisplay.textContent = expressaoCalc; } 
-      catch (err) { calcDisplay.textContent = 'Erro'; expressaoCalc = ''; }
-    }
-  });
-});
-
-document.getElementById('btn-usar-valor').addEventListener('click', () => {
-  const valorCalculado = parseFloat(calcDisplay.textContent);
-  if (!isNaN(valorCalculado) && valorCalculado > 0) {
-    modalCalculadora.style.display = 'none';
-    tituloModalItem.textContent = itemEmEdicaoId ? 'Editar Produto' : 'Adicionar Produto';
-    if (!itemEmEdicaoId) inputs.nome.value = ''; inputs.qtd.value = 1; inputs.preco.value = valorCalculado.toFixed(2);
-    modalItem.style.display = 'flex';
-  } else { mostrarToast('Calcule um valor válido!', 'error'); }
-});
-
-// 📷 MÓDULO DE CÂMERA (LEITURA DE ETIQUETA)
-const inputCamera = document.getElementById('input-camera');
-if (inputCamera) {
-  inputCamera.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    mostrarToast('Processando imagem...', 'info');
-
-    try {
-      // Simula o tempo de uma IA lendo a etiqueta via API
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      const nomeIdentificado = prompt("Etiqueta lida! Confirme o nome do produto:", "Produto Escaneado");
-      
-      if (nomeIdentificado) {
-        const precoIdentificado = parseFloat(prompt(`Qual o preço de ${nomeIdentificado}?`, "0.00")) || 0;
-
-        await db.itens.add({
-          id: generateUUID(),
-          lista_id: listaId,
-          nome: nomeIdentificado,
-          quantidade: 1,
-          preco_unitario: precoIdentificado,
-          comprado: false,
-          user_id: 'local'
-        });
-        
-        mostrarToast('Produto escaneado adicionado!', 'success');
-        carregarDados();
-      }
-    } catch (error) {
-      mostrarToast('Falha ao processar a imagem.', 'error');
-    } finally {
-      inputCamera.value = ''; // Limpa o input para poder usar a câmera de novo em seguida
-    }
-  });
-}
-
-// 🔘 MÓDULO DO MENU FAB EXPANSÍVEL (ATUADOR)
-const fabContainer = document.getElementById('fab-container');
-const btnFabToggle = document.getElementById('btn-fab-toggle');
-
-// Abre/Fecha o menu ao clicar no botão Mestre (+)
-if (btnFabToggle) {
-  btnFabToggle.addEventListener('click', (e) => {
-    e.stopPropagation(); 
-    fabContainer.classList.toggle('active');
-  });
-}
-
-// Fecha o menu suavemente se o usuário clicar em qualquer outro lugar da tela
-document.addEventListener('click', (e) => {
-  if (fabContainer && fabContainer.classList.contains('active')) {
-    if (!fabContainer.contains(e.target)) {
-      fabContainer.classList.remove('active');
-    }
-  }
-});
-
-// Fecha o menu automaticamente após você escolher uma opção
-document.querySelectorAll('.fab-menu .fab-action').forEach(btn => {
-  btn.addEventListener('click', () => {
-    fabContainer.classList.remove('active');
-  });
-});
-
-
+// ==========================================
+// INICIALIZAÇÃO
+// ==========================================
 carregarDados();
