@@ -324,32 +324,42 @@ document.getElementById('btn-sincronizar').addEventListener('click', async () =>
     iconeSync.style.animation = 'spin 1s linear infinite';
     const userId = session.user.id;
 
-    // 1. ENVIA (PUSH) - Salva o que você fez neste celular na nuvem
+    // 1. ENVIA A LISTA (E captura erro se houver)
     const listaLocal = await db.listas.get(listaId);
     if (listaLocal) {
-      await supabase.from('listas').upsert({ ...listaLocal, orcamento: parseFloat(listaLocal.orcamento)||0, user_id: userId });
+      const { error: errLista } = await supabase.from('listas').upsert({ ...listaLocal, orcamento: parseFloat(listaLocal.orcamento)||0, user_id: userId });
+      if (errLista) throw new Error('Erro ao salvar cabeçalho da lista: ' + errLista.message);
     }
     
+    // 2. ENVIA OS ITENS (Com trava de segurança contra falha silenciosa)
     const itensLocais = await db.itens.where('lista_id').equals(listaId).toArray();
     if (itensLocais.length > 0) {
-      await supabase.from('itens').upsert(itensLocais.map(i => ({ ...i, preco_unitario: parseFloat(i.preco_unitario)||0, unidade: i.unidade || 'un', user_id: userId })));
+      const payloadItens = itensLocais.map(i => ({ 
+        ...i, 
+        preco_unitario: parseFloat(i.preco_unitario)||0, 
+        unidade: i.unidade || 'un', 
+        user_id: userId 
+      }));
+      
+      const { error: errItens } = await supabase.from('itens').upsert(payloadItens);
+      if (errItens) throw new Error('Erro ao salvar itens: ' + errItens.message);
     }
 
-    // 2. RECEBE (PULL) - Baixa as novidades que vieram do outro celular
-    const { data: itensNuvem, error } = await supabase.from('itens').select('*').eq('lista_id', listaId);
-    if (error) throw error;
+    // 3. RECEBE (PULL) - Só chega aqui se o Upload acima foi 100% perfeito
+    const { data: itensNuvem, error: errSelect } = await supabase.from('itens').select('*').eq('lista_id', listaId);
+    if (errSelect) throw new Error('Erro ao baixar itens: ' + errSelect.message);
 
     if (itensNuvem) {
-      // Limpa os dados antigos da tela e insere os dados frescos e atualizados da nuvem
       await db.itens.where('lista_id').equals(listaId).delete(); 
       await db.itens.bulkAdd(itensNuvem); 
     }
 
     mostrarToast('Sincronizado com sucesso!', 'success');
-    carregarDados(); // Recarrega a tela para mostrar os itens do outro aparelho
+    carregarDados(); 
     
   } catch (error) { 
-    mostrarToast('Erro ao comunicar com a nuvem.', 'error'); 
+    console.error("FALHA NA SYNC:", error);
+    mostrarToast('Falha na sincronização. Seus dados locais estão seguros.', 'error'); 
   } finally { 
     iconeSync.style.animation = ''; 
   }
