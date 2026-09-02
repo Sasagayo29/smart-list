@@ -3,21 +3,22 @@
 }
 
 /* =========================================
-   ILHA DINÂMICA FIXA (STICKY HEADER)
+   ILHA DINÂMICA FIXA (100% BLINDADA)
    ========================================= */
+.main-content {
+  padding-top: 0 !important; /* Remove o obstáculo do teto da tela */
+}
+
 .dynamic-island-container { 
-  position: -webkit-sticky; 
+  position: -webkit-sticky; /* Trava no iPhone/iOS */
   position: sticky; 
-  top: -1.5rem; /* Ignora o padding do celular */
-  align-self: flex-start; /* 🌟 O Segredo de Ouro: Destrava o Sticky dentro do Flexbox! */
+  top: 0; /* Cola no teto absoluto */
   z-index: 95; 
   display: flex; 
   justify-content: center; 
-  padding: 1.5rem 0 1rem 0; 
-  margin-top: -1.5rem; 
-  margin-bottom: 1.5rem; 
+  padding: 1.5rem 0 1rem 0; /* O respiro que era da tela agora é da ilha */
   width: 100%;
-  background-color: var(--bg-main); 
+  background-color: var(--bg-main); /* Fundo sólido para esconder itens */
 }
 
 /* Ajuste fino para a tela do Computador (que tem um padding maior) */

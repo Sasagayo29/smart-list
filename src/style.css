@@ -106,11 +106,11 @@ body { background-color: var(--bg-main); color: var(--text-main); overflow-x: hi
 }
 
 /* =========================================
-   TOASTS DE NOTIFICAÇÃO (MODERNOS / PÍLULA)
+   TOASTS DE NOTIFICAÇÃO (PÍLULAS MODERNAS)
    ========================================= */
 #toast-container {
   position: fixed;
-  bottom: 40px; /* Posicionado na parte inferior central */
+  bottom: 40px; 
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -124,12 +124,12 @@ body { background-color: var(--bg-main); color: var(--text-main); overflow-x: hi
 }
 
 .toast {
-  background: rgba(15, 23, 42, 0.85); /* Fundo translúcido escuro */
-  backdrop-filter: blur(12px); /* Efeito de vidro */
+  background: rgba(15, 23, 42, 0.85); 
+  backdrop-filter: blur(12px); 
   -webkit-backdrop-filter: blur(12px);
   color: #ffffff;
   padding: 0.8rem 1.25rem;
-  border-radius: 99px; /* Formato de Pílula (Pill-shape) */
+  border-radius: 99px; 
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
@@ -138,20 +138,16 @@ body { background-color: var(--bg-main); color: var(--text-main); overflow-x: hi
   font-weight: 500;
   font-size: 0.95rem;
   opacity: 0;
-  
-  /* Animação tipo "Pulo" e "Sumiço" */
   transform: translateY(30px) scale(0.9);
   animation: toastEnter 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards,
              toastLeave 0.4s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards 2.6s;
 }
 
-/* Ajuste das cores dos ícones para o novo visual */
 .toast-icon { font-size: 1.4rem; }
 .toast.success .toast-icon { color: var(--success); }
 .toast.error .toast-icon { color: var(--danger); }
 .toast.info .toast-icon { color: var(--primary-color); }
 
-/* Se o usuário mudar para o Tema Claro, o Toast acompanha elegantemente */
 body.light-theme .toast {
   background: rgba(255, 255, 255, 0.9);
   color: var(--text-main);
@@ -159,12 +155,8 @@ body.light-theme .toast {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
 }
 
-@keyframes toastEnter {
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-@keyframes toastLeave {
-  to { opacity: 0; transform: translateY(30px) scale(0.9); }
-}
+@keyframes toastEnter { to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes toastLeave { to { opacity: 0; transform: translateY(30px) scale(0.9); } }
 
 /* =========================================
    TEMA CLARO (LIGHT MODE)

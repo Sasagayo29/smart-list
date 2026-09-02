@@ -19,15 +19,12 @@ const tituloModalItem = modalItem.querySelector('h3');
 const inputs = { 
   nome: document.getElementById('input-nome-item'), 
   qtd: document.getElementById('input-qtd-item'), 
-  unidade: document.getElementById('input-unidade-item'), // Novo campo!
+  unidade: document.getElementById('input-unidade-item'), 
   preco: document.getElementById('input-preco-item') 
 };
 
 let itemEmEdicaoId = null; 
 
-// ==========================================
-// 1. NAVEGAÇÃO E DADOS BASE
-// ==========================================
 document.getElementById('btn-voltar-nav').addEventListener('click', () => window.location.href = '/');
 document.getElementById('btn-voltar-ilha').addEventListener('click', () => window.location.href = '/');
 
@@ -49,6 +46,7 @@ async function carregarDados() {
   renderizarItens(itens);
 }
 
+// 🌟 FUNÇÃO DE RENDERIZAR ITENS (Aqui dentro ficam os eventos dos botões do cartão!)
 function renderizarItens(itensArray) {
   itensContainer.innerHTML = '';
   itensArray.sort((a, b) => (a.comprado === b.comprado) ? 0 : a.comprado ? 1 : -1);
@@ -57,7 +55,7 @@ function renderizarItens(itensArray) {
     const preco = parseFloat(item.preco_unitario) || 0;
     const subtotal = item.quantidade * preco;
     const comprado = item.comprado;
-    const unidade = item.unidade || 'un'; // Garante padrão "un"
+    const unidade = item.unidade || 'un';
 
     const card = document.createElement('div');
     card.className = 'item-card';
@@ -65,7 +63,6 @@ function renderizarItens(itensArray) {
     card.style.flexDirection = 'column';
     card.style.gap = '1rem';
 
-    // 🌟 NOVO LAYOUT DO CARTÃO (Com os botões de + e -) 🌟
     card.innerHTML = `
       <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
         <div style="display: flex; gap: 0.75rem; align-items: flex-start; flex: 1;">
@@ -83,14 +80,12 @@ function renderizarItens(itensArray) {
       </div>
 
       <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-         <!-- Botões de Controle Rápido -->
          <div class="qtd-control" style="${comprado ? 'opacity: 0.5; pointer-events: none;' : ''}">
            <button class="btn-qtd btn-minus" data-id="${item.id}"><span class="material-symbols-rounded" style="font-size: 1.2rem;">remove</span></button>
            <span class="qtd-value">${item.quantidade} <span style="font-size:0.7rem; color: var(--text-muted);">${unidade}</span></span>
            <button class="btn-qtd btn-plus" data-id="${item.id}"><span class="material-symbols-rounded" style="font-size: 1.2rem;">add</span></button>
          </div>
 
-         <!-- Botões de Edição/Exclusão -->
          <div class="item-actions-group">
            <button class="btn-action-pill edit btn-editar" data-id="${item.id}" title="Editar"><span class="material-symbols-rounded">edit</span></button>
            <button class="btn-action-pill delete btn-excluir" data-id="${item.id}" title="Excluir"><span class="material-symbols-rounded">delete</span></button>
@@ -100,37 +95,33 @@ function renderizarItens(itensArray) {
     itensContainer.appendChild(card);
   });
 
-  // Evento de Check (Comprado) com Sincronização Silenciosa 🚀
+  // 👉 AQUI FICA O EVENTO DO CHECKBOX 
   document.querySelectorAll('.btn-check').forEach(btn => {
     btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
       const id = e.currentTarget.getAttribute('data-id');
       const item = await db.itens.get(id);
+      if (!item) return;
       const novoStatus = !item.comprado;
       
-      // 1. Atualiza na tela e no banco local na velocidade da luz
       await db.itens.update(id, { comprado: novoStatus });
       carregarDados();
       
-      // 2. Dispara um "tiro invisível" para a nuvem atualizar os outros aparelhos!
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
           await supabase.from('itens').update({ comprado: novoStatus }).eq('id', id);
         }
-      } catch (err) {
-        console.log('Sem internet: A marcação será enviada apenas quando você tocar no botão principal de Sync.');
-      }
+      } catch (err) { console.log('Sincronização em nuvem adiada.'); }
     });
   });
 
-  // Lógica inteligente dos Botões de + e -
+  // Eventos de Mais e Menos
   document.querySelectorAll('.btn-plus').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       const id = e.currentTarget.getAttribute('data-id');
       const item = await db.itens.get(id);
-      let passo = 1;
-      if(item.unidade === 'kg' || item.unidade === 'L') passo = 0.5; // Carnes e líquidos somam de meio em meio
-      
+      let passo = (item.unidade === 'kg' || item.unidade === 'L') ? 0.5 : 1; 
       await db.itens.update(id, { quantidade: parseFloat((item.quantidade + passo).toFixed(3)) });
       carregarDados();
     });
@@ -140,19 +131,17 @@ function renderizarItens(itensArray) {
     btn.addEventListener('click', async (e) => {
       const id = e.currentTarget.getAttribute('data-id');
       const item = await db.itens.get(id);
-      let passo = 1;
-      if(item.unidade === 'kg' || item.unidade === 'L') passo = 0.5;
-      
+      let passo = (item.unidade === 'kg' || item.unidade === 'L') ? 0.5 : 1; 
       if (item.quantidade > passo) {
         await db.itens.update(id, { quantidade: parseFloat((item.quantidade - passo).toFixed(3)) });
         carregarDados();
       } else {
-        mostrarToast('Use o botão de lixeira para remover', 'info');
+        mostrarToast('Use a lixeira para remover', 'info');
       }
     });
   });
 
-  // Editar Item (Agora puxa a unidade também)
+  // Eventos de Editar e Excluir
   document.querySelectorAll('.btn-editar').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       const item = await db.itens.get(e.currentTarget.getAttribute('data-id'));
@@ -172,122 +161,88 @@ function renderizarItens(itensArray) {
     btn.addEventListener('click', async (e) => {
       if (confirm('Excluir este item?')) { 
         const id = e.currentTarget.getAttribute('data-id');
-        
-        // 1. Apaga localmente
         await db.itens.delete(id); 
-        
-        // 2. Apaga na nuvem simultaneamente
         try {
            const { data: { session } } = await supabase.auth.getSession();
-           if (session) {
-              await supabase.from('itens').delete().eq('id', id);
-           }
-        } catch (err) {
-           console.log('Sem internet para apagar na nuvem agora.');
-        }
-
+           if (session) await supabase.from('itens').delete().eq('id', id);
+        } catch (err) {}
         mostrarToast('Removido', 'success'); 
         carregarDados(); 
       }
     });
   });
-}
+} // Fim da função renderizarItens
 
+// Busca
 inputBusca.addEventListener('input', async (e) => {
   const termo = e.target.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   const todosItens = await db.itens.where('lista_id').equals(listaId).toArray();
   renderizarItens(todosItens.filter(item => item.nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(termo)));
 });
 
-// ==========================================
-// 2. FUNÇÕES DE ADICIONAR E SALVAR ITEM
-// ==========================================
+// Modal de Salvar Manual
 document.getElementById('btn-add-item').addEventListener('click', () => { 
   itemEmEdicaoId = null; 
   tituloModalItem.textContent = 'Adicionar Produto';
-  inputs.nome.value = ''; 
-  inputs.qtd.value = 1; 
-  inputs.unidade.value = 'un';
-  inputs.preco.value = ''; 
+  inputs.nome.value = ''; inputs.qtd.value = 1; inputs.unidade.value = 'un'; inputs.preco.value = ''; 
   modalItem.style.display = 'flex'; 
 });
 
-document.getElementById('btn-fechar-modal-item').addEventListener('click', () => {
-  modalItem.style.display = 'none';
-});
+document.getElementById('btn-fechar-modal-item').addEventListener('click', () => { modalItem.style.display = 'none'; });
 
-// Salvar no Banco (Agora permite decimais graças ao parseFloat)
 document.getElementById('btn-salvar-item').addEventListener('click', async () => {
   const nome = inputs.nome.value;
   if (!nome) return mostrarToast('Insira o nome!', 'error');
   
-  const payload = {
-    nome, 
-    quantidade: parseFloat(inputs.qtd.value) || 1, 
-    unidade: inputs.unidade.value,
-    preco_unitario: parseFloat(inputs.preco.value) || 0
-  };
+  const payload = { nome, quantidade: parseFloat(inputs.qtd.value) || 1, unidade: inputs.unidade.value, preco_unitario: parseFloat(inputs.preco.value) || 0 };
 
-  if (itemEmEdicaoId) {
-    await db.itens.update(itemEmEdicaoId, payload);
-  } else {
-    await db.itens.add({ ...payload, id: generateUUID(), lista_id: listaId, comprado: false, user_id: 'local' });
-  }
+  if (itemEmEdicaoId) await db.itens.update(itemEmEdicaoId, payload);
+  else await db.itens.add({ ...payload, id: generateUUID(), lista_id: listaId, comprado: false, user_id: 'local' });
   
-  modalItem.style.display = 'none'; 
-  itemEmEdicaoId = null; 
-  carregarDados();
+  modalItem.style.display = 'none'; itemEmEdicaoId = null; carregarDados();
 });
 
-// ==========================================
-// 3. MENU EXPANSÍVEL (FAB) E MÓDULOS EXTRAS
-// ==========================================
+// Menu FAB
 const fabContainer = document.getElementById('fab-container');
 const btnFabToggle = document.getElementById('btn-fab-toggle');
-
-if (btnFabToggle) {
-  btnFabToggle.addEventListener('click', (e) => { e.stopPropagation(); fabContainer.classList.toggle('active'); });
-}
+if (btnFabToggle) { btnFabToggle.addEventListener('click', (e) => { e.stopPropagation(); fabContainer.classList.toggle('active'); }); }
 document.addEventListener('click', (e) => { if (fabContainer && fabContainer.classList.contains('active') && !fabContainer.contains(e.target)) fabContainer.classList.remove('active'); });
 document.querySelectorAll('.fab-menu .fab-action').forEach(btn => { btn.addEventListener('click', () => fabContainer.classList.remove('active')); });
 
+// Voz
 const btnMic = document.getElementById('btn-mic');
 if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   const recognition = new SpeechRecognition();
   recognition.lang = 'pt-BR'; recognition.continuous = false;
 
-  btnMic.addEventListener('click', () => {
-    mostrarToast('Ouvindo...', 'info');
-    btnMic.style.animation = 'spin 1s linear infinite';
-    recognition.start();
-  });
+  btnMic.addEventListener('click', () => { mostrarToast('Ouvindo...', 'info'); btnMic.style.animation = 'spin 1s linear infinite'; recognition.start(); });
   recognition.onresult = (event) => {
     const transcricao = event.results[0][0].transcript;
     itemEmEdicaoId = null; tituloModalItem.textContent = 'Adicionar (Por Voz)';
     inputs.nome.value = transcricao.charAt(0).toUpperCase() + transcricao.slice(1); inputs.qtd.value = 1; inputs.unidade.value = 'un'; inputs.preco.value = '';
-    modalItem.style.display = 'flex'; mostrarToast('Produto reconhecido!', 'success');
+    modalItem.style.display = 'flex'; mostrarToast('Reconhecido!', 'success');
   };
   recognition.onerror = () => mostrarToast('Não entendi.', 'error');
   recognition.onend = () => btnMic.style.animation = '';
 } else { btnMic.style.display = 'none'; }
 
+// Camera
 const inputCamera = document.getElementById('input-camera');
 if (inputCamera) {
   inputCamera.addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    mostrarToast('Processando imagem...', 'info');
+    mostrarToast('Processando...', 'info');
     try {
       await new Promise(resolve => setTimeout(resolve, 1500));
-      const nomeIdentificado = prompt("Etiqueta lida! Confirme o nome do produto:", "Produto");
+      const nomeIdentificado = prompt("Confirmar nome:", "Produto");
       if (nomeIdentificado) {
-        const precoIdentificado = parseFloat(prompt(`Qual o preço de ${nomeIdentificado}?`, "0.00")) || 0;
+        const precoIdentificado = parseFloat(prompt(`Preço de ${nomeIdentificado}?`, "0.00")) || 0;
         await db.itens.add({ id: generateUUID(), lista_id: listaId, nome: nomeIdentificado, quantidade: 1, unidade: 'un', preco_unitario: precoIdentificado, comprado: false, user_id: 'local' });
         carregarDados();
       }
-    } catch (error) { mostrarToast('Erro ao ler a imagem.', 'error'); } 
-    finally { inputCamera.value = ''; }
+    } catch (err) { mostrarToast('Erro', 'error'); } finally { inputCamera.value = ''; }
   });
 }
 
@@ -311,8 +266,7 @@ document.querySelectorAll('.calc-btn').forEach(btn => {
     } else if (action === 'clear') { expressaoCalc = ''; calcDisplay.textContent = '0';
     } else if (action === 'delete') { expressaoCalc = expressaoCalc.toString().slice(0, -1); calcDisplay.textContent = expressaoCalc || '0';
     } else if (action === 'calculate') {
-      try { expressaoCalc = Number.isInteger(new Function('return ' + expressaoCalc)()) ? new Function('return ' + expressaoCalc)().toString() : new Function('return ' + expressaoCalc)().toFixed(2); calcDisplay.textContent = expressaoCalc; } 
-      catch (err) { calcDisplay.textContent = 'Erro'; expressaoCalc = ''; }
+      try { expressaoCalc = Number.isInteger(new Function('return ' + expressaoCalc)()) ? new Function('return ' + expressaoCalc)().toString() : new Function('return ' + expressaoCalc)().toFixed(2); calcDisplay.textContent = expressaoCalc; } catch (err) { calcDisplay.textContent = 'Erro'; expressaoCalc = ''; }
     }
   });
 });
@@ -325,9 +279,7 @@ document.getElementById('btn-usar-valor').addEventListener('click', () => {
   } else { mostrarToast('Valor inválido!', 'error'); }
 });
 
-// ==========================================
-// INTEGRAÇÕES: NUVEM E COMPARTILHAMENTO
-// ==========================================
+// Nuvem Blindada
 document.getElementById('btn-sincronizar').addEventListener('click', async () => {
   const iconeSync = document.getElementById('btn-sincronizar').querySelector('span');
   try {
@@ -337,59 +289,39 @@ document.getElementById('btn-sincronizar').addEventListener('click', async () =>
     iconeSync.style.animation = 'spin 1s linear infinite';
     const userId = session.user.id;
 
-    // 1. ENVIA A LISTA (E captura erro se houver)
     const listaLocal = await db.listas.get(listaId);
     if (listaLocal) {
       const { error: errLista } = await supabase.from('listas').upsert({ ...listaLocal, orcamento: parseFloat(listaLocal.orcamento)||0, user_id: userId });
-      if (errLista) throw new Error('Erro ao salvar cabeçalho da lista: ' + errLista.message);
+      if (errLista) throw new Error(errLista.message);
     }
     
-    // 2. ENVIA OS ITENS (Com trava de segurança contra falha silenciosa)
     const itensLocais = await db.itens.where('lista_id').equals(listaId).toArray();
     if (itensLocais.length > 0) {
-      const payloadItens = itensLocais.map(i => ({ 
-        ...i, 
-        preco_unitario: parseFloat(i.preco_unitario)||0, 
-        unidade: i.unidade || 'un', 
-        user_id: userId 
-      }));
-      
+      const payloadItens = itensLocais.map(i => ({ ...i, preco_unitario: parseFloat(i.preco_unitario)||0, unidade: i.unidade || 'un', user_id: userId }));
       const { error: errItens } = await supabase.from('itens').upsert(payloadItens);
-      if (errItens) throw new Error('Erro ao salvar itens: ' + errItens.message);
+      if (errItens) throw new Error(errItens.message);
     }
 
-    // 3. RECEBE (PULL) - Só chega aqui se o Upload acima foi 100% perfeito
     const { data: itensNuvem, error: errSelect } = await supabase.from('itens').select('*').eq('lista_id', listaId);
-    if (errSelect) throw new Error('Erro ao baixar itens: ' + errSelect.message);
+    if (errSelect) throw new Error(errSelect.message);
 
     if (itensNuvem) {
       await db.itens.where('lista_id').equals(listaId).delete(); 
       await db.itens.bulkAdd(itensNuvem); 
     }
 
-    mostrarToast('Sincronizado com sucesso!', 'success');
+    mostrarToast('Sincronizado!', 'success');
     carregarDados(); 
-    
-  } catch (error) { 
-    console.error("FALHA NA SYNC:", error);
-    mostrarToast('Falha na sincronização. Seus dados locais estão seguros.', 'error'); 
-  } finally { 
-    iconeSync.style.animation = ''; 
-  }
+  } catch (error) { mostrarToast('Falha na Sync. Dados locais seguros.', 'error'); } finally { iconeSync.style.animation = ''; }
 });
 
-// ==========================================
-// MÓDULOS DE COMPARTILHAMENTO E IMPORTAÇÃO
-// ==========================================
-
-// 📁 MÓDULO DE IMPORTAÇÃO (Excel/TXT para DENTRO da lista)
+// Importar e Compartilhar
 const inputImportar = document.getElementById('input-importar');
 if (inputImportar) {
   inputImportar.addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     const extensao = file.name.split('.').pop().toLowerCase();
-
     try {
       if (extensao === 'txt' || extensao === 'csv') {
         const texto = await file.text();
@@ -399,44 +331,30 @@ if (inputImportar) {
           await db.itens.add({ id: generateUUID(), lista_id: listaId, nome: partes[0].trim(), quantidade: parseInt(partes[1]) || 1, preco_unitario: parseFloat(partes[2]) || 0, comprado: false, unidade: 'un', user_id: 'local' });
         }
       } else {
-        const buffer = await file.arrayBuffer();
-        const workbook = XLSX.read(buffer);
-        const dados = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+        const buffer = await file.arrayBuffer(); const workbook = XLSX.read(buffer); const dados = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
         for (const linha of dados) {
           const nome = linha.Nome || linha.nome || linha.Produto || linha.produto;
           if (!nome) continue; 
           await db.itens.add({ id: generateUUID(), lista_id: listaId, nome: String(nome), quantidade: parseInt(linha.Qtd || linha.Quantidade || 1), preco_unitario: parseFloat(linha.Preco || linha.Valor || 0), comprado: false, unidade: linha.Unidade || 'un', user_id: 'local' });
         }
       }
-      mostrarToast('Itens mesclados com sucesso!', 'success');
-      carregarDados();
-    } catch (error) { mostrarToast('Erro ao importar arquivo', 'error'); }
+      mostrarToast('Mesclado com sucesso!', 'success'); carregarDados();
+    } catch (error) { mostrarToast('Erro ao importar', 'error'); }
     e.target.value = ''; 
   });
 }
 
-// 📤 COMPARTILHAMENTO NATIVO / WHATSAPP
 const btnShare = document.getElementById('btn-share');
 if (btnShare) {
   btnShare.addEventListener('click', async () => {
-    const lista = await db.listas.get(listaId);
-    const itens = await db.itens.where('lista_id').equals(listaId).toArray();
+    const lista = await db.listas.get(listaId); const itens = await db.itens.where('lista_id').equals(listaId).toArray();
     if (itens.length === 0) return mostrarToast('Lista vazia!', 'error');
-
     let texto = `🛒 *${lista.nome}*\n_Orçamento: R$ ${parseFloat(lista.orcamento).toFixed(2)}_\n\n`;
     let total = 0;
-    itens.forEach(item => { 
-      total += item.quantidade * (parseFloat(item.preco_unitario)||0); 
-      texto += `${item.comprado?'✅':'➖'} ${item.quantidade}${item.unidade||'un'} ${item.nome} - R$ ${(item.quantidade * (parseFloat(item.preco_unitario)||0)).toFixed(2)}\n`; 
-    });
+    itens.forEach(item => { total += item.quantidade * (parseFloat(item.preco_unitario)||0); texto += `${item.comprado?'✅':'➖'} ${item.quantidade}${item.unidade||'un'} ${item.nome} - R$ ${(item.quantidade * (parseFloat(item.preco_unitario)||0)).toFixed(2)}\n`; });
     texto += `\n💰 *Total Estimado: R$ ${total.toFixed(2)}*\n\n_Gerado via Smart List_`;
-
-    if (navigator.share) {
-      try { await navigator.share({ title: `Smart List - ${lista.nome}`, text: texto }); } 
-      catch (err) { console.log('Cancelado pelo usuário'); }
-    } else { 
-      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank'); 
-    }
+    if (navigator.share) { try { await navigator.share({ title: `Smart List`, text: texto }); } catch (err) {}
+    } else { window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank'); }
   });
 }
 
