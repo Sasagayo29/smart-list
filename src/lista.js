@@ -100,13 +100,26 @@ function renderizarItens(itensArray) {
     itensContainer.appendChild(card);
   });
 
-  // Evento de Check (Comprado)
+  // Evento de Check (Comprado) com Sincronização Silenciosa 🚀
   document.querySelectorAll('.btn-check').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       const id = e.currentTarget.getAttribute('data-id');
       const item = await db.itens.get(id);
-      await db.itens.update(id, { comprado: !item.comprado });
+      const novoStatus = !item.comprado;
+      
+      // 1. Atualiza na tela e no banco local na velocidade da luz
+      await db.itens.update(id, { comprado: novoStatus });
       carregarDados();
+      
+      // 2. Dispara um "tiro invisível" para a nuvem atualizar os outros aparelhos!
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          await supabase.from('itens').update({ comprado: novoStatus }).eq('id', id);
+        }
+      } catch (err) {
+        console.log('Sem internet: A marcação será enviada apenas quando você tocar no botão principal de Sync.');
+      }
     });
   });
 

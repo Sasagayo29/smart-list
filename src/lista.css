@@ -6,19 +6,27 @@
    ILHA DINÂMICA FIXA (STICKY HEADER)
    ========================================= */
 .dynamic-island-container { 
-  position: -webkit-sticky; /* Essencial para funcionar no iPhone/Safari */
+  position: -webkit-sticky; 
   position: sticky; 
-  top: -1.5rem; /* Puxa a ilha ignorando o padding da tela */
-  z-index: 95; /* Fica acima dos itens */
+  top: -1.5rem; /* Ignora o padding do celular */
+  align-self: flex-start; /* 🌟 O Segredo de Ouro: Destrava o Sticky dentro do Flexbox! */
+  z-index: 95; 
   display: flex; 
   justify-content: center; 
-  padding: 1.5rem 0; /* Espaço para respirar */
-  margin-top: -1.5rem; /* Compensa a puxada para não quebrar o layout */
+  padding: 1.5rem 0 1rem 0; 
+  margin-top: -1.5rem; 
   margin-bottom: 1.5rem; 
   width: 100%;
-  
-  /* Fundo sólido para esconder os itens que rolam por trás */
   background-color: var(--bg-main); 
+}
+
+/* Ajuste fino para a tela do Computador (que tem um padding maior) */
+@media (min-width: 769px) {
+  .dynamic-island-container {
+    top: -2rem;
+    margin-top: -2rem;
+    padding-top: 2rem;
+  }
 }
 
 .unified-island { 
