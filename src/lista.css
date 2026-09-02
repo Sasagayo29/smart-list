@@ -3,22 +3,42 @@
 }
 
 /* =========================================
-   ILHA DINÂMICA FIXA (100% BLINDADA)
+   ILHA DINÂMICA (FIXAÇÃO ABSOLUTA)
    ========================================= */
 .main-content {
-  padding-top: 0 !important; /* Remove o obstáculo do teto da tela */
+  padding-top: 0 !important;
+}
+
+.content-area {
+  padding-top: 90px; /* Empurra a lista para baixo para não nascer atrás da ilha */
+  padding-bottom: 160px; 
 }
 
 .dynamic-island-container { 
-  position: -webkit-sticky; /* Trava no iPhone/iOS */
-  position: sticky; 
-  top: 0; /* Cola no teto absoluto */
-  z-index: 95; 
-  display: flex; 
-  justify-content: center; 
-  padding: 1.5rem 0 1rem 0; /* O respiro que era da tela agora é da ilha */
+  position: fixed; /* A SOLUÇÃO DEFINITIVA */
+  top: 15px; 
+  left: 50%;
+  transform: translateX(-50%); /* Centraliza perfeitamente */
+  z-index: 100; /* Fica acima de tudo, exceto modais */
   width: 100%;
-  background-color: var(--bg-main); /* Fundo sólido para esconder itens */
+  max-width: 450px;
+  padding: 0 1rem; /* Margem de segurança lateral */
+  pointer-events: none; /* Deixa o toque passar pelo container invisível */
+}
+
+.unified-island { 
+  pointer-events: auto; /* Reativa o clique nos botões da ilha */
+  background-color: #000000; 
+  color: #ffffff; 
+  border-radius: 99px; 
+  padding: 0.35rem 0.5rem; 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+  gap: 0.5rem; 
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6); 
+  border: 1px solid var(--border-color); 
+  width: 100%; 
 }
 
 /* Ajuste fino para a tela do Computador (que tem um padding maior) */
@@ -30,21 +50,6 @@
   }
 }
 
-.unified-island { 
-  background-color: #000000; 
-  color: #ffffff; 
-  border-radius: 99px; 
-  padding: 0.35rem 0.5rem; 
-  display: flex; 
-  align-items: center; 
-  justify-content: space-between; 
-  gap: 0.5rem; 
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); 
-  pointer-events: auto; 
-  width: 100%; 
-  max-width: 450px; 
-  border: 1px solid var(--border-color); 
-}
 .island-icon { background: transparent; border: none; color: #9ca3af; width: 38px; height: 38px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: var(--transition); padding: 0; }
 .island-icon span { font-size: 1.2rem; }
 .island-icon:hover { color: #ffffff; background: rgba(255,255,255,0.1); }

@@ -227,22 +227,73 @@ if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
   recognition.onend = () => btnMic.style.animation = '';
 } else { btnMic.style.display = 'none'; }
 
-// Camera
+// 📷 MÓDULO DE CÂMERA (LEITURA REAL COM IA)
 const inputCamera = document.getElementById('input-camera');
 if (inputCamera) {
   inputCamera.addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    mostrarToast('Processando...', 'info');
+    
+    mostrarToast('Iniciando Inteligência Visual...', 'info');
+
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      const nomeIdentificado = prompt("Confirmar nome:", "Produto");
-      if (nomeIdentificado) {
-        const precoIdentificado = parseFloat(prompt(`Preço de ${nomeIdentificado}?`, "0.00")) || 0;
-        await db.itens.add({ id: generateUUID(), lista_id: listaId, nome: nomeIdentificado, quantidade: 1, unidade: 'un', preco_unitario: precoIdentificado, comprado: false, user_id: 'local' });
-        carregarDados();
+      if (!window.Tesseract) throw new Error('O motor da IA não foi carregado.');
+
+      // 1. Envia a foto para a IA ler (Em português)
+      const { data: { text } } = await Tesseract.recognize(file, 'por', {
+        logger: m => {
+          if(m.status === 'recognizing text' && m.progress === 0) {
+            mostrarToast('Analisando pixels da etiqueta...', 'info');
+          }
+        }
+      });
+
+      console.log("Texto extraído da imagem: \n", text);
+
+      // 2. Tenta "pescar" o preço na imagem (ex: 12,99 ou R$12.99)
+      const regexPreco = /(?:R\$\s*)?(\d+[\.,]\d{2})/;
+      const priceMatch = text.match(regexPreco);
+      let precoIdentificado = 0;
+      if (priceMatch) {
+         precoIdentificado = parseFloat(priceMatch[1].replace(',', '.'));
       }
-    } catch (err) { mostrarToast('Erro', 'error'); } finally { inputCamera.value = ''; }
+
+      // 3. Tenta deduzir o nome (Pega a primeira linha com letras longas)
+      const linhas = text.split('\n').map(l => l.trim()).filter(l => l.length > 3);
+      let nomeIdentificado = "Produto Extraído";
+      for (let linha of linhas) {
+         if (/[a-zA-Z]{3,}/.test(linha) && !linha.toLowerCase().includes('r$')) {
+             nomeIdentificado = linha.substring(0, 35); // Limita o tamanho
+             break;
+         }
+      }
+
+      // 4. Apresenta o resultado real extraído da foto para você apenas confirmar!
+      const nomeFinal = prompt("Etiqueta lida! Revise o NOME extraído:", nomeIdentificado);
+      if (nomeFinal) {
+        const precoFinal = parseFloat(prompt(`Revise o PREÇO de ${nomeFinal}:`, precoIdentificado.toFixed(2))) || 0;
+        
+        await db.itens.add({ 
+          id: generateUUID(), 
+          lista_id: listaId, 
+          nome: nomeFinal, 
+          quantidade: 1, 
+          unidade: 'un', 
+          preco_unitario: precoFinal, 
+          comprado: false, 
+          user_id: 'local' 
+        });
+        
+        carregarDados();
+        mostrarToast('Produto lido e adicionado!', 'success');
+      }
+
+    } catch (error) { 
+      console.error(error);
+      mostrarToast('Falha na IA. Tente focar bem na etiqueta.', 'error'); 
+    } finally { 
+      inputCamera.value = ''; // Limpa o botão para a próxima foto
+    }
   });
 }
 
