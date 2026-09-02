@@ -11,8 +11,11 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="/src/style.css" />
     <style>
-      /* Esconde a barra inferior no Dashboard para focar nos cartões */
-      @media (max-width: 768px) { .vertical-toolbar { display: none !important; } .main-content { padding-bottom: 2rem !important; } }
+      /* Esconde a barra inferior no Dashboard e garante espaço pro botão flutuante */
+      @media (max-width: 768px) { 
+        .vertical-toolbar { display: none !important; } 
+        .main-content { padding-bottom: 140px !important; } 
+      }
     </style>
   </head>
   <body style="overflow-x: hidden;">

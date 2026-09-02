@@ -1,9 +1,40 @@
 .content-area {
-  padding-bottom: 130px; /* Garante que os últimos itens não fiquem escondidos */
+  padding-bottom: 160px; /* Aumentamos o espaço para os itens fugirem do Menu Expansível */
 }
-/* Ilha Dinâmica Unificada */
-.dynamic-island-container { position: sticky; top: 10px; z-index: 90; display: flex; justify-content: center; margin-bottom: 2rem; pointer-events: none; width: 100%; }
-.unified-island { background-color: #000000; color: #ffffff; border-radius: 99px; padding: 0.35rem 0.5rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); pointer-events: auto; width: 100%; max-width: 450px; border: 1px solid var(--border-color); }
+
+/* =========================================
+   ILHA DINÂMICA FIXA (STICKY HEADER)
+   ========================================= */
+.dynamic-island-container { 
+  position: sticky; 
+  top: 0; /* Gruda exatamente no teto da tela */
+  z-index: 95; /* Fica acima dos itens, mas abaixo dos modais */
+  display: flex; 
+  justify-content: center; 
+  padding: 15px 0; /* Espaço para respirar */
+  margin-top: -15px; /* Compensa o espaço para não empurrar a tela pra baixo */
+  margin-bottom: 1.5rem; 
+  width: 100%;
+  
+  /* O segredo da Ilha: Fundo sólido para esconder os itens que rolam por trás */
+  background-color: var(--bg-main); 
+}
+
+.unified-island { 
+  background-color: #000000; 
+  color: #ffffff; 
+  border-radius: 99px; 
+  padding: 0.35rem 0.5rem; 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+  gap: 0.5rem; 
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); 
+  pointer-events: auto; 
+  width: 100%; 
+  max-width: 450px; 
+  border: 1px solid var(--border-color); 
+}
 .island-icon { background: transparent; border: none; color: #9ca3af; width: 38px; height: 38px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: var(--transition); padding: 0; }
 .island-icon span { font-size: 1.2rem; }
 .island-icon:hover { color: #ffffff; background: rgba(255,255,255,0.1); }
