@@ -46,7 +46,29 @@
             <h3 style="margin-bottom: 1rem; font-size: 1rem; color: var(--text-muted);">Desempenho</h3>
             <canvas id="grafico-gastos" style="max-height: 180px;"></canvas>
           </div>
-          <div id="listas-container" class="listas-grid"></div>
+
+          <!-- 🌟 LISTA EM DESTAQUE (MAIS RECENTE / ATIVA) 🌟 -->
+          <div id="secao-destaque" style="margin-bottom: 2rem; display: none;">
+            <span style="font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--primary-color); display: block; margin-bottom: 0.75rem;">
+              Em Andamento
+            </span>
+            <div id="lista-destaque-container"></div>
+          </div>
+
+          <!-- 📂 SEÇÃO DE LISTAS ANTERIORES / ARQUIVADAS 📂 -->
+          <div id="secao-arquivadas" style="display: none;">
+            <button id="btn-toggle-arquivadas" style="width: 100%; display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); padding: 0.85rem 1.25rem; border-radius: var(--radius-md); color: var(--text-muted); font-size: 0.95rem; font-weight: 600; cursor: pointer; margin-bottom: 1rem; transition: var(--transition);">
+              <span style="display: flex; align-items: center; gap: 0.5rem;">
+                <span class="material-symbols-rounded">inventory_2</span>
+                Listas Finalizadas / Arquivadas (<span id="qtd-arquivadas">0</span>)
+              </span>
+              <span class="material-symbols-rounded" id="icone-pasta-seta" style="transition: transform 0.3s ease;">expand_more</span>
+            </button>
+
+            <!-- Gaveta que abre e fecha -->
+            <div id="listas-arquivadas-container" class="listas-grid" style="display: none;"></div>
+          </div>
+
           <p class="empty-state" id="empty-state" style="display: none;">Nenhuma lista. Comece criando ou importando uma!</p>
         </div>
       </main>

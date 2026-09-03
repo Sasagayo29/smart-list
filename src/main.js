@@ -5,14 +5,14 @@ import * as XLSX from 'xlsx';
 
 const btnNovaLista = document.getElementById('btn-nova-lista');
 const modalLista = document.getElementById('modal-lista');
-const tituloModalLista = modalLista.querySelector('h3'); // Seleciona o título do modal
+const tituloModalLista = modalLista.querySelector('h3');
 const btnFecharModal = document.getElementById('btn-fechar-modal');
 const btnSalvarLista = document.getElementById('btn-salvar-lista');
 const listasContainer = document.getElementById('listas-container');
 const emptyState = document.getElementById('empty-state');
 const btnBaixarNuvem = document.getElementById('btn-baixar-nuvem');
 
-let listaEmEdicaoId = null; // Variável de controle (Criar vs Editar)
+let listaEmEdicaoId = null; 
 
 const categoriasConfig = [
   { id: 'mercado', nome: 'Mercado', icone: 'shopping_cart', cor: '#3b82f6' },
@@ -23,7 +23,6 @@ const categoriasConfig = [
 
 let categoriaSelecionada = 'mercado';
 
-// Lógica de seleção de categorias no modal
 document.querySelectorAll('.cat-option').forEach(el => {
   el.addEventListener('click', (e) => {
     document.querySelectorAll('.cat-option').forEach(opt => opt.classList.remove('selected'));
@@ -33,7 +32,7 @@ document.querySelectorAll('.cat-option').forEach(el => {
 });
 
 // ==========================================
-// 1. ABRIR MODAL PARA NOVA LISTA
+// ABRIR MODAIS E SALVAR
 // ==========================================
 btnNovaLista.addEventListener('click', () => {
   listaEmEdicaoId = null;
@@ -41,7 +40,6 @@ btnNovaLista.addEventListener('click', () => {
   document.getElementById('input-nome-lista').value = '';
   document.getElementById('input-orcamento-lista').value = '';
   
-  // Reseta para categoria padrão
   document.querySelectorAll('.cat-option').forEach(opt => opt.classList.remove('selected'));
   document.querySelector('.cat-option[data-cat="mercado"]').classList.add('selected');
   categoriaSelecionada = 'mercado';
@@ -54,32 +52,16 @@ btnFecharModal.addEventListener('click', () => {
   listaEmEdicaoId = null;
 });
 
-// ==========================================
-// 2. SALVAR OU ATUALIZAR LISTA
-// ==========================================
 btnSalvarLista.addEventListener('click', async () => {
   const nome = document.getElementById('input-nome-lista').value;
   const orcamento = parseFloat(document.getElementById('input-orcamento-lista').value) || 0;
   if (!nome) return mostrarToast('Dê um nome para a sua lista!', 'error');
 
   if (listaEmEdicaoId) {
-    // MODO EDIÇÃO
-    await db.listas.update(listaEmEdicaoId, {
-      nome: nome,
-      orcamento: orcamento,
-      categoria: categoriaSelecionada
-    });
+    await db.listas.update(listaEmEdicaoId, { nome, orcamento, categoria: categoriaSelecionada });
     mostrarToast('Lista atualizada com sucesso!', 'success');
   } else {
-    // MODO CRIAÇÃO
-    await db.listas.add({ 
-      id: generateUUID(), 
-      nome, 
-      categoria: categoriaSelecionada, 
-      orcamento, 
-      created_at: new Date().toISOString(), 
-      user_id: 'local' 
-    });
+    await db.listas.add({ id: generateUUID(), nome, categoria: categoriaSelecionada, orcamento, created_at: new Date().toISOString(), user_id: 'local' });
     mostrarToast('Lista criada com sucesso!', 'success');
   }
 
@@ -88,9 +70,6 @@ btnSalvarLista.addEventListener('click', async () => {
   carregarListas();
 });
 
-// ==========================================
-// 3. RENDERIZAÇÃO DO GRÁFICO E LISTAS
-// ==========================================
 let meuGrafico = null;
 function renderizarGrafico(labels, orcamentos, gastos) {
   const ctx = document.getElementById('grafico-gastos');
@@ -116,29 +95,42 @@ function renderizarGrafico(labels, orcamentos, gastos) {
   });
 }
 
+// ==========================================
+// RENDERIZAÇÃO DAS LISTAS (DESTAQUE + ARQUIVADAS)
+// ==========================================
 async function carregarListas() {
   const listas = await db.listas.toArray();
-  listasContainer.innerHTML = ''; 
+  const secaoDestaque = document.getElementById('secao-destaque');
+  const listaDestaqueContainer = document.getElementById('lista-destaque-container');
+  const secaoArquivadas = document.getElementById('secao-arquivadas');
+  const listasArquivadasContainer = document.getElementById('listas-arquivadas-container');
+  const qtdArquivadasSpan = document.getElementById('qtd-arquivadas');
+
+  listaDestaqueContainer.innerHTML = '';
+  listasArquivadasContainer.innerHTML = '';
 
   if (listas.length === 0) {
     emptyState.style.display = 'block';
+    secaoDestaque.style.display = 'none';
+    secaoArquivadas.style.display = 'none';
     renderizarGrafico([], [], []);
     return;
   }
-  
+
   emptyState.style.display = 'none';
   const labels = []; const orcs = []; const gasts = [];
 
-  // Ordena listas da mais nova para a mais velha
-  listas.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  listas.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
 
-  for (const lista of listas) {
+  const [listaRecente, ...listasPassadas] = listas;
+
+  async function criarCardLista(lista, isDestaque = false) {
     const orcamento = parseFloat(lista.orcamento) || 0;
     const dataFormatada = new Date(lista.created_at || new Date()).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
     const catDetalhes = categoriasConfig.find(c => c.id === lista.categoria) || categoriasConfig[3];
     const itensDaLista = await db.itens.where('lista_id').equals(lista.id).toArray();
     const gastoTotal = itensDaLista.reduce((acc, item) => acc + (item.quantidade * (parseFloat(item.preco_unitario) || 0)), 0);
-    
+
     labels.push(lista.nome);
     orcs.push(orcamento);
     gasts.push(gastoTotal);
@@ -148,23 +140,22 @@ async function carregarListas() {
     const corBarra = porcentagem > 90 ? 'var(--danger)' : catDetalhes.cor;
 
     const card = document.createElement('div');
-    card.className = 'lista-card';
+    card.className = `lista-card ${isDestaque ? 'card-destaque' : ''}`;
     
-    // Adicionamos o botão de Editar junto do Clonar e Excluir
-    // 🌟 NOVO LAYOUT DO CARTÃO DE LISTA (Separado em 3 sessões limpas) 🌟
     card.innerHTML = `
-      <!-- 1. CABEÇALHO: Ícone e Título (Espaço 100% livre) -->
       <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem;">
         <div class="cat-icon-card" style="background-color: ${catDetalhes.cor}; margin: 0; flex-shrink: 0; width: 48px; height: 48px; border-radius: 12px;">
           <span class="material-symbols-rounded" style="font-size: 1.8rem;">${catDetalhes.icone}</span>
         </div>
         <div style="overflow: hidden; flex: 1;">
-          <h3 style="margin: 0 0 0.2rem 0; font-size: 1.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-main);">${lista.nome}</h3>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <h3 style="margin: 0 0 0.2rem 0; font-size: 1.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-main);">${lista.nome}</h3>
+            ${isDestaque ? '<span style="background: rgba(14, 165, 233, 0.2); color: var(--primary-color); font-size: 0.7rem; padding: 2px 8px; border-radius: 99px; font-weight: 700;">ATUAL</span>' : ''}
+          </div>
           <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 500;">${dataFormatada}</span>
         </div>
       </div>
 
-      <!-- 2. CORPO: Barra de Progresso e Valores -->
       <div class="progress-container" style="margin-top: 0; margin-bottom: 1.25rem;">
         <div class="progress-labels">
           <span style="font-weight: 700; color: var(--text-main);">R$ ${gastoTotal.toFixed(2)}</span>
@@ -175,7 +166,6 @@ async function carregarListas() {
         </div>
       </div>
 
-      <!-- 3. RODAPÉ: Botões de Ação (Abaixo de uma linha suave) -->
       <div style="display: flex; justify-content: flex-end; align-items: center; gap: 0.5rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
          <button class="btn-icon btn-editar-lista" data-id="${lista.id}" style="color: var(--primary-color); width: 38px; height: 38px;" title="Editar">
            <span class="material-symbols-rounded" style="font-size: 1.3rem;">edit</span>
@@ -188,69 +178,81 @@ async function carregarListas() {
          </button>
       </div>
     `;
-      
-    // Previne que o clique nos botões abra a lista
+
     card.addEventListener('click', (e) => {
       if(!e.target.closest('.btn-clonar') && !e.target.closest('.btn-excluir-lista') && !e.target.closest('.btn-editar-lista')) {
         window.location.href = `/lista.html?id=${lista.id}`;
       }
     });
-    listasContainer.appendChild(card);
+
+    return card;
   }
 
-  // EVENTO DE EDITAR LISTA
+  if (listaRecente) {
+    const cardRecente = await criarCardLista(listaRecente, true);
+    listaDestaqueContainer.appendChild(cardRecente);
+    secaoDestaque.style.display = 'block';
+  }
+
+  if (listasPassadas.length > 0) {
+    qtdArquivadasSpan.textContent = listasPassadas.length;
+    for (const l of listasPassadas) {
+      const cardArquivada = await criarCardLista(l, false);
+      listasArquivadasContainer.appendChild(cardArquivada);
+    }
+    secaoArquivadas.style.display = 'block';
+  } else {
+    secaoArquivadas.style.display = 'none';
+  }
+
+  vincularAcoesListas();
+  renderizarGrafico(labels.slice(0, 5), orcs.slice(0, 5), gasts.slice(0, 5));
+}
+
+// ----------------------------------------------------
+// BOTÕES DE AÇÃO DOS CARDS (EDITAR, CLONAR, EXCLUIR)
+// ----------------------------------------------------
+function vincularAcoesListas() {
   document.querySelectorAll('.btn-editar-lista').forEach(btn => {
     btn.addEventListener('click', async (e) => {
        e.stopPropagation();
        const id = e.currentTarget.getAttribute('data-id');
        const lista = await db.listas.get(id);
-       
        if (lista) {
          listaEmEdicaoId = lista.id;
          tituloModalLista.textContent = 'Editar Lista';
          document.getElementById('input-nome-lista').value = lista.nome;
          document.getElementById('input-orcamento-lista').value = parseFloat(lista.orcamento).toFixed(2);
-         
-         // Atualiza a categoria visualmente
          document.querySelectorAll('.cat-option').forEach(opt => opt.classList.remove('selected'));
          const catOption = document.querySelector(`.cat-option[data-cat="${lista.categoria}"]`);
          if(catOption) catOption.classList.add('selected');
          categoriaSelecionada = lista.categoria;
-
          modalLista.style.display = 'flex';
        }
     });
   });
 
-  // EVENTO DE EXCLUIR (Com Exclusão Simultânea na Nuvem)
+  // Exclusão com Inteligência da Nuvem Garantida
   document.querySelectorAll('.btn-excluir-lista').forEach(btn => {
     btn.addEventListener('click', async (e) => {
        e.stopPropagation();
        if(confirm('Excluir esta lista e todos os seus produtos?')) {
           const id = e.currentTarget.getAttribute('data-id');
-          
-          // 1. Apaga do banco local (Celular)
           await db.itens.where('lista_id').equals(id).delete();
           await db.listas.delete(id);
-
-          // 2. Dispara o tiro na Nuvem (Supabase) na mesma hora!
           try {
              const { data: { session } } = await supabase.auth.getSession();
              if (session) {
                 await supabase.from('itens').delete().eq('lista_id', id);
                 await supabase.from('listas').delete().eq('id', id);
              }
-          } catch (err) {
-             console.log('Sem internet para apagar na nuvem agora.');
-          }
-
+          } catch (err) { console.log('Apagado apenas localmente.'); }
           mostrarToast('Lista excluída!', 'success');
           carregarListas();
        }
     });
   });
 
-  // EVENTO DE CLONAR
   document.querySelectorAll('.btn-clonar').forEach(btn => {
     btn.addEventListener('click', async (e) => {
        e.stopPropagation();
@@ -263,17 +265,27 @@ async function carregarListas() {
        for(const item of itensAntigos) {
           await db.itens.add({ ...item, id: generateUUID(), lista_id: novaListaId, comprado: false });
        }
-       
        mostrarToast('Lista duplicada!', 'success');
        carregarListas();
     });
   });
+}
 
-  renderizarGrafico(labels.slice(0, 5), orcs.slice(0, 5), gasts.slice(0, 5));
+// 📂 Alternador da Pasta / Gaveta de Arquivadas
+const btnToggleArquivadas = document.getElementById('btn-toggle-arquivadas');
+const gavetaArquivadas = document.getElementById('listas-arquivadas-container');
+const iconePastaSeta = document.getElementById('icone-pasta-seta');
+
+if (btnToggleArquivadas) {
+  btnToggleArquivadas.addEventListener('click', () => {
+    const fechado = gavetaArquivadas.style.display === 'none';
+    gavetaArquivadas.style.display = fechado ? 'grid' : 'none';
+    iconePastaSeta.style.transform = fechado ? 'rotate(180deg)' : 'rotate(0deg)';
+  });
 }
 
 // ==========================================
-// 4. AUTENTICAÇÃO E IMPORTAÇÃO
+// AUTENTICAÇÃO E IMPORTAÇÃO
 // ==========================================
 async function verificarUsuario() {
   const { data: { session } } = await supabase.auth.getSession();
